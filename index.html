@@ -223,16 +223,31 @@
             const { data, error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
             if (error) alert("Gagal koneksi ke Google: " + error.message);
         }
-
-        function toggleAuthMode() { 
-            const isReg = document.getElementById('reg-fields').classList.toggle('hidden'); 
-            document.getElementById('reg-tgl').required = isReg;
-            document.getElementById('modal-title').innerText = isReg ? 'Daftar Akun Baru' : 'Masuk'; 
-            document.getElementById('btn-auth').innerText = isReg ? 'Buat Akun' : 'Masuk Sekarang'; 
-            document.getElementById('toggle-text').innerText = isReg ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar Akun Baru'; 
-        }
+        
+function toggleAuthMode() { 
+    const regFields = document.getElementById('reg-fields');
+    regFields.classList.toggle('hidden'); 
+    
+    // Cek apakah class 'hidden' sudah hilang (artinya sedang di mode Daftar)
+    const isReg = !regFields.classList.contains('hidden'); 
+    
+    document.getElementById('reg-tgl').required = isReg;
+    document.getElementById('modal-title').innerText = isReg ? 'Daftar Akun Baru' : 'Masuk'; 
+    document.getElementById('btn-auth').innerText = isReg ? 'Buat Akun' : 'Masuk Sekarang'; 
+    document.getElementById('toggle-text').innerText = isReg ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar Akun Baru'; 
+}
         function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
-        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+        function closeAuthModal() { 
+    document.getElementById('auth-modal').classList.add('hidden'); 
+    
+    // Reset form kembali ke mode Login setiap kali modal ditutup
+    document.getElementById('reg-fields').classList.add('hidden');
+    document.getElementById('reg-tgl').required = false;
+    document.getElementById('modal-title').innerText = 'Masuk'; 
+    document.getElementById('btn-auth').innerText = 'Masuk Sekarang'; 
+    document.getElementById('toggle-text').innerText = 'Belum punya akun? Daftar Akun Baru';
+    document.getElementById('authForm').reset();
+}
 
         document.getElementById('authForm').onsubmit = async (e) => {
             e.preventDefault(); 
