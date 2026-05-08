@@ -11,6 +11,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
     
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -194,10 +196,9 @@
     <!-- SCRIPT SUPABASE & LOGIC -->
     <script>
         // MASUKKAN KREDENSIAL SUPABASE KAMU DI SINI
-        const SUPABASE_URL = 'https://nhsrvtintqtwwongurrl.supabase.co'; // GANTI INI
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oc3J2dGludHF0d3dvbmd1cnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MzM1MzQsImV4cCI6MjA5MzQwOTUzNH0._vADwO4JvlYfO6iJON1Rqd5_YlfnJeXfZ8hPMTMsZU0'; // GANTI INI
+    
         
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
 
         let userData = null; let allModules = []; let currentModuleData = []; let currentPartIndex = 0; let activeModuleId = ""; 
         let currentQuizzes = []; let currentQuizIndex = 0; let earnedPoints = 0; let userAnswers = {};
