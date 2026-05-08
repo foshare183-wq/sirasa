@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#005a9c">
@@ -11,6 +10,9 @@
     <title>HealthLearn - App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MENGHUBUNGKAN SUPABASE SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script> tailwind.config = { theme: { extend: { colors: { primary: "#005a9c", secondary: "#f0f4f8", accent: "#ef4444" }, fontFamily: { headline: ["Lexend"], body: ["Manrope"] } } } } </script>
@@ -129,23 +131,20 @@
         <nav class="p-4 border-b flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-md z-10">
             <button onclick="closeLearningView()" class="flex items-center gap-1 text-gray-500 font-bold hover:text-red-500"><span class="material-symbols-outlined">close</span> Tutup</button>
             <div class="w-32 h-2 bg-gray-100 rounded-full overflow-hidden"><div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width:0%"></div></div>
-            <div class="w-20"></div> <!-- Spacer for flex -->
+            <div class="w-20"></div>
         </nav>
 
         <div class="max-w-4xl mx-auto p-4 md:p-8 pb-32">
-            <!-- Materi -->
             <div id="material-area">
                 <div id="media-container" class="rounded-[2rem] overflow-hidden mb-6 border shadow-sm bg-gray-50"></div>
                 <h2 id="part-title" class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">...</h2>
                 <div id="part-body" class="text-gray-600 text-base md:text-lg leading-relaxed prose max-w-none"></div>
             </div>
 
-            <!-- Kuis -->
             <div id="quiz-area" class="hidden text-center bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-inner">
                 <div id="quiz-navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
                 <h2 id="quiz-question" class="text-xl md:text-2xl font-bold mb-8 text-gray-800">...</h2>
                 <div id="quiz-options" class="grid gap-3 text-left"></div>
-                
                 <div class="flex gap-4 mt-8">
                     <button id="btn-prev-quiz" onclick="navigateQuiz(-1)" class="flex-1 py-4 bg-white border border-gray-300 text-gray-600 rounded-xl font-bold transition hover:bg-gray-100 hidden">Sebelumnya</button>
                     <button id="btn-next-quiz" onclick="navigateQuiz(1)" class="flex-[2] py-4 bg-primary text-white rounded-xl font-bold transition shadow-lg">Berikutnya</button>
@@ -153,7 +152,6 @@
             </div>
         </div>
 
-        <!-- Bottom Nav (Materi Only) -->
         <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t flex gap-4 justify-center">
             <button id="prev-part" class="px-8 py-3 border border-gray-200 text-gray-500 rounded-xl font-bold transition hover:bg-gray-50">Kembali</button>
             <button id="next-part" class="px-10 py-3 bg-primary text-white rounded-xl font-bold shadow-lg hover:scale-105 transition">Berikutnya</button>
@@ -166,30 +164,144 @@
             <button onclick="closeAuthModal()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 text-xl font-bold">×</button>
             <h2 id="modal-title" class="font-headline text-2xl font-bold mb-1">Masuk</h2>
             <form id="authForm" class="space-y-4 mt-6">
-                <div id="reg-fields" class="hidden space-y-4">
+                <div id="reg-fields" class="hidden space-y-4 border-b border-gray-100 pb-4 mb-4">
                     <input type="text" id="reg-nama" placeholder="Nama Lengkap" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
                     <input type="tel" id="reg-nohp" placeholder="Nomor WA (Opsional)" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
+                    <input type="date" id="reg-tgl" placeholder="Tanggal Lahir" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm text-gray-500" />
                 </div>
                 <input type="email" id="auth-email" placeholder="Email" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
                 <input type="password" id="auth-pass" placeholder="Password" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
                 <button type="submit" id="btn-auth" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-2 transition hover:bg-[#00478d]">Masuk Sekarang</button>
+                <button type="button" onclick="loginWithGoogle()" class="w-full bg-white border border-gray-200 text-gray-600 font-bold py-3 rounded-xl flex items-center justify-center gap-3 text-sm hover:bg-gray-50 transition">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="w-5 h-5"/> Lanjutkan dengan Google
+                </button>
             </form>
             <button onclick="toggleAuthMode()" id="toggle-text" class="w-full mt-6 text-sm font-bold text-gray-400 hover:text-primary transition">Belum punya akun? Daftar Akun Baru</button>
         </div>
     </div>
 
+    <!-- SCRIPT SUPABASE & LOGIC -->
     <script>
+        // MASUKKAN KREDENSIAL SUPABASE KAMU DI SINI
+        const SUPABASE_URL = 'https://URL_PROJECT_KAMU.supabase.co'; // Ganti dengan Project URL
+        const SUPABASE_ANON_KEY = 'KODE_ANON_KEY_KAMU'; // Ganti dengan Anon Key
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let userData = null; let allModules = []; let currentModuleData = []; let currentPartIndex = 0; let activeModuleId = ""; 
         let currentQuizzes = []; let currentQuizIndex = 0; let earnedPoints = 0; let userAnswers = {};
         let myUserChart = null;
 
-        window.onload = function() { 
-            loadModules(); 
-            if(localStorage.getItem('healthlearn_user')) { 
+        // INIT & CEK LOGIN GOOGLE
+        window.onload = async function() { 
+            // Cek jika user login pakai Google Oauth (Session Token)
+            const { data: { session } } = await supabase.auth.getSession();
+            if(session) {
+                // Cari data user di tabel custom kita (berdasarkan email Google)
+                const { data: uData } = await supabase.from('users').select('*').eq('email', session.user.email);
+                if(uData && uData.length > 0) {
+                    userData = uData[0];
+                    localStorage.setItem('healthlearn_user', JSON.stringify(userData));
+                } else {
+                    // Jika login Google pertama kali, buat akun otomatis di tabel users
+                    const { data: newU } = await supabase.from('users').insert([{
+                        nama_lengkap: session.user.user_metadata.full_name || 'User Google',
+                        email: session.user.email, password_hash: 'GOOGLE_AUTH', role: 'user', total_points: 0
+                    }]).select('*');
+                    userData = newU[0];
+                    localStorage.setItem('healthlearn_user', JSON.stringify(userData));
+                }
+            } else if(localStorage.getItem('healthlearn_user')) { 
                 userData = JSON.parse(localStorage.getItem('healthlearn_user')); 
-                updateUIForUser(); 
             } 
+            
+            if(userData) updateUIForUser();
+            loadModules(); 
         };
+
+        // --- AUTH & LOGIN ---
+        async function loginWithGoogle() {
+            const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+            if (error) alert("Gagal koneksi ke Google: " + error.message);
+        }
+
+        function toggleAuthMode() { 
+            const isReg = document.getElementById('reg-fields').classList.toggle('hidden'); 
+            document.getElementById('reg-tgl').required = isReg;
+            document.getElementById('modal-title').innerText = isReg ? 'Daftar Akun Baru' : 'Masuk'; 
+            document.getElementById('btn-auth').innerText = isReg ? 'Buat Akun' : 'Masuk Sekarang'; 
+            document.getElementById('toggle-text').innerText = isReg ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar Akun Baru'; 
+        }
+        function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+
+        document.getElementById('authForm').onsubmit = async (e) => {
+            e.preventDefault(); 
+            const isReg = !document.getElementById('reg-fields').classList.contains('hidden'); 
+            const btn = document.getElementById('btn-auth'); btn.innerText = "Memproses..."; btn.disabled = true;
+            
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
+
+            if(isReg) { 
+                const nama = document.getElementById('reg-nama').value;
+                const nohp = document.getElementById('reg-nohp').value;
+                const tgl = document.getElementById('reg-tgl').value;
+                
+                // Cek Email
+                const { data: check } = await supabase.from('users').select('id').eq('email', email);
+                if(check.length > 0) {
+                    alert('Email sudah terdaftar.'); btn.innerText = "Buat Akun"; btn.disabled = false; return;
+                }
+                
+                // Insert User
+                const { error } = await supabase.from('users').insert([{ nama_lengkap: nama, email: email, nomor_hp: nohp, tanggal_lahir: tgl, password_hash: pass, role: 'user', total_points: 0 }]);
+                btn.disabled = false;
+                if(!error) { alert("Pendaftaran Berhasil! Silakan Masuk."); toggleAuthMode(); } else { alert("Gagal daftar: " + error.message); btn.innerText = "Buat Akun"; }
+            } else { 
+                // Login Manual
+                const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password_hash', pass);
+                btn.disabled = false;
+                if(data && data.length > 0){ 
+                    userData = data[0]; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
+                    closeAuthModal(); updateUIForUser(); document.getElementById('authForm').reset();
+                    // Log Aktivitas
+                    supabase.from('user_tracking').insert([{ user_id: userData.id, activity_type: 'login', description: 'User login.' }]).then();
+                } else { alert("Email atau Password salah."); btn.innerText = "Masuk Sekarang"; } 
+            }
+        };
+
+        function updateUIForUser() { 
+            document.getElementById('greeting-text').innerText = `Halo ${userData.nama_lengkap.split(' ')[0]}! 🌟`; 
+            document.getElementById('user-status-text').innerText = userData.nama_lengkap.split(' ')[0]; 
+            document.getElementById('user-points-text').innerText = userData.total_points + " Pts"; 
+            document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${userData.nama_lengkap}&background=005a9c&color=fff`;
+            
+            document.getElementById('btn-login-menu').classList.add('hidden');
+            document.getElementById('btn-profil-menu').classList.remove('hidden');
+            document.getElementById('btn-logout-menu').classList.remove('hidden');
+            if(userData.role === 'admin') document.getElementById('admin-dropdown-btn').classList.remove('hidden'); 
+        }
+
+        function toggleProfileMenu(e) { e.stopPropagation(); document.getElementById('profile-dropdown').classList.toggle('hidden'); }
+        async function logout() { 
+            if(confirm('Apakah Anda yakin ingin keluar?')) {
+                await supabase.auth.signOut(); // Logout session Google
+                localStorage.removeItem('healthlearn_user'); userData = null;
+                document.getElementById('profile-dropdown').classList.add('hidden');
+                document.getElementById('user-status-text').innerText = 'Masuk';
+                document.getElementById('user-points-text').innerText = '0 Pts';
+                document.getElementById('user-avatar').src = 'https://ui-avatars.com/api/?name=Guest';
+                document.getElementById('greeting-text').innerText = 'Halo! Siap Belajar? 🚀';
+                
+                document.getElementById('btn-login-menu').classList.remove('hidden');
+                document.getElementById('btn-profil-menu').classList.add('hidden');
+                document.getElementById('btn-logout-menu').classList.add('hidden');
+                document.getElementById('admin-dropdown-btn').classList.add('hidden');
+                closeUserDashboard();
+            }
+        }
+        window.onclick = () => document.getElementById('profile-dropdown').classList.add('hidden');
 
         // --- DASHBOARD USER ---
         function openUserDashboard() {
@@ -212,10 +324,7 @@
             loadUserChart();
         }
 
-        function closeUserDashboard() {
-            document.getElementById('user-dashboard-view').classList.add('hidden');
-            document.getElementById('main-view').classList.remove('hidden');
-        }
+        function closeUserDashboard() { document.getElementById('user-dashboard-view').classList.add('hidden'); document.getElementById('main-view').classList.remove('hidden'); }
 
         function switchUserTab(tab) {
             document.querySelectorAll('.tab-btn-user').forEach(b => b.classList.remove('active', 'border-l-4'));
@@ -226,49 +335,50 @@
             if(tab === 'rapor') loadUserChart();
         }
 
-        function loadUserChart() {
-            google.script.run.withSuccessHandler(res => {
-                const ctx = document.getElementById('userProgressChart').getContext('2d');
-                if(myUserChart) myUserChart.destroy();
-                if(!res.data || res.data.length === 0) return;
-                
-                let gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                gradient.addColorStop(0, 'rgba(0, 90, 156, 0.6)'); gradient.addColorStop(1, 'rgba(0, 90, 156, 0.05)');
-                myUserChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: { labels: res.data.map(d => d.modules.title.substring(0,10)+'...'), datasets: [{ label: 'Skor Kuis', data: res.data.map(d => d.score), backgroundColor: gradient, borderRadius: 8 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
-                });
-            }).getUserProgressChart(userData.id);
+        async function loadUserChart() {
+            const { data, error } = await supabase.from('user_progress').select('score, modules(title)').eq('user_id', userData.id);
+            if(error || !data || data.length === 0) return;
+
+            const ctx = document.getElementById('userProgressChart').getContext('2d');
+            if(myUserChart) myUserChart.destroy();
+            let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(0, 90, 156, 0.6)'); gradient.addColorStop(1, 'rgba(0, 90, 156, 0.05)');
+            myUserChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: data.map(d => d.modules.title.substring(0,10)+'...'), datasets: [{ label: 'Skor Kuis', data: data.map(d => d.score), backgroundColor: gradient, borderRadius: 8 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
+            });
         }
 
-        document.getElementById('editProfilForm').onsubmit = (e) => {
-            e.preventDefault(); const btn = document.getElementById('btn-ep-save'); btn.innerText = "Menyimpan..."; btn.disabled = true;
+        document.getElementById('editProfilForm').onsubmit = async (e) => {
+            e.preventDefault(); const btn = document.getElementById('btn-ep-save'); btn.innerText = "Menyimpan...";
             const payload = { nama_lengkap: document.getElementById('ep-nama').value, nomor_hp: document.getElementById('ep-nohp').value };
-            google.script.run.withSuccessHandler(res => {
-                btn.innerText = "Update Profil"; btn.disabled = false;
-                if(res.status === 'success') {
-                    userData.nama_lengkap = payload.nama_lengkap; userData.nomor_hp = payload.nomor_hp;
-                    localStorage.setItem('healthlearn_user', JSON.stringify(userData)); updateUIForUser(); alert('Profil berhasil diperbarui!');
-                }
-            }).updateUserData(userData.id, payload);
+            const { error } = await supabase.from('users').update(payload).eq('id', userData.id);
+            btn.innerText = "Update Profil";
+            if(!error) {
+                userData.nama_lengkap = payload.nama_lengkap; userData.nomor_hp = payload.nomor_hp;
+                localStorage.setItem('healthlearn_user', JSON.stringify(userData)); updateUIForUser(); alert('Profil berhasil diperbarui!');
+            } else alert('Gagal update.');
         };
 
-        function loadMentoring() {
-            google.script.run.withSuccessHandler(data => {
-                const list = document.getElementById('mentoring-list'); list.innerHTML = '';
-                if(data.length === 0) list.innerHTML = '<p class="text-sm text-gray-400">Belum ada jadwal.</p>';
-                data.forEach(d => list.innerHTML += `<div class="p-4 border rounded-xl bg-gray-50 flex justify-between items-center"><div class="flex-1"><p class="font-bold text-sm text-gray-800">${d.topic}</p><p class="text-xs text-gray-500">${new Date(d.schedule).toLocaleString()}</p></div><span class="text-[10px] font-black uppercase px-3 py-1 rounded-md ${d.status==='pending'?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600'}">${d.status}</span></div>`);
-            }).getMentoring(userData.id);
+        async function loadMentoring() {
+            const { data } = await supabase.from('mentoring').select('*').eq('user_id', userData.id).order('schedule', { ascending: true });
+            const list = document.getElementById('mentoring-list'); list.innerHTML = '';
+            if(!data || data.length === 0) { list.innerHTML = '<p class="text-sm text-gray-400">Belum ada jadwal diajukan.</p>'; return; }
+            data.forEach(d => list.innerHTML += `<div class="p-4 border rounded-xl bg-gray-50 flex justify-between items-center"><div class="flex-1"><p class="font-bold text-sm text-gray-800">${d.topic}</p><p class="text-xs text-gray-500">${new Date(d.schedule).toLocaleString()}</p></div><span class="text-[10px] font-black uppercase px-3 py-1 rounded-md ${d.status==='pending'?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600'}">${d.status}</span></div>`);
         }
         
-        document.getElementById('mentoringForm').onsubmit = (e) => {
+        document.getElementById('mentoringForm').onsubmit = async (e) => {
             e.preventDefault();
-            google.script.run.withSuccessHandler(res => { alert('Jadwal diajukan!'); document.getElementById('m-topic').value=''; loadMentoring(); }).requestMentoring({ user_id: userData.id, topic: document.getElementById('m-topic').value, schedule: document.getElementById('m-date').value });
+            const { error } = await supabase.from('mentoring').insert([{ user_id: userData.id, topic: document.getElementById('m-topic').value, schedule: document.getElementById('m-date').value }]);
+            if(!error) { alert('Jadwal diajukan!'); document.getElementById('m-topic').value=''; loadMentoring(); }
         };
 
         // --- MODULE & LEARNING ---
-        function loadModules() { google.script.run.withSuccessHandler(m => { allModules = m; renderModules(m); }).getModules(); }
+        async function loadModules() { 
+            const { data, error } = await supabase.from('modules').select('*');
+            if(data) { allModules = data; renderModules(data); }
+        }
         
         function renderModules(data) {
             const c = document.getElementById('course-container'); c.innerHTML = '';
@@ -286,9 +396,9 @@
             });
         }
 
-        function checkAccess(page, id, title) {
+        async function checkAccess(page, id, title) {
             if(!userData) return openAuthModal();
-            if(page === 'admin') { google.script.run.withSuccessHandler(url => window.top.location.href = url + "?p=admin").getScriptUrl(); } 
+            if(page === 'admin') { window.location.href = "admin.html"; } 
             else { 
                 activeModuleId = id; activeModuleTitle = title;
                 document.getElementById('learning-view').classList.remove('hidden'); 
@@ -296,12 +406,15 @@
                 document.getElementById('quiz-area').classList.add('hidden'); 
                 document.getElementById('bottom-nav').classList.remove('hidden'); 
                 document.body.style.overflow = 'hidden'; 
-                google.script.run.withSuccessHandler(res => { currentModuleData = res; currentPartIndex = 0; renderPart(); }).getModuleContents(id); 
+                
+                // Ambil materi dari DB
+                const { data } = await supabase.from('module_contents').select('*').eq('module_id', id).order('order_index', { ascending: true });
+                currentModuleData = data || []; currentPartIndex = 0; renderPart(); 
             }
         }
 
         function renderPart() {
-            if(currentModuleData.length === 0) return alert("Modul belum ada materi.");
+            if(!currentModuleData || currentModuleData.length === 0) return alert("Modul belum ada materi.");
             const p = currentModuleData[currentPartIndex];
             document.getElementById('progress-bar').style.width = ((currentPartIndex + 1) / currentModuleData.length * 100) + "%";
             document.getElementById('part-title').innerText = p.title; 
@@ -334,24 +447,23 @@
             document.getElementById('learning-view').scrollTo(0,0);
         }
 
-        // --- KUIS DINAMIS DENGAN NAVIGASI NOMOR ---
-        function startQuiz() {
+        // --- KUIS DINAMIS ---
+        async function startQuiz() {
             document.getElementById('next-part').innerText = "Tunggu...";
-            google.script.run.withSuccessHandler(q => {
-                if(q.length === 0) { alert("Belum ada kuis."); return closeLearningView(); }
-                currentQuizzes = q; currentQuizIndex = 0; earnedPoints = 0; userAnswers = {};
-                document.getElementById('material-area').classList.add('hidden'); 
-                document.getElementById('bottom-nav').classList.add('hidden'); 
-                document.getElementById('quiz-area').classList.remove('hidden'); 
-                renderQuizQuestion();
-            }).getModuleQuizzes(activeModuleId);
+            const { data } = await supabase.from('quizzes').select('*').eq('module_id', activeModuleId);
+            
+            if(!data || data.length === 0) { alert("Belum ada kuis."); return closeLearningView(); }
+            currentQuizzes = data; currentQuizIndex = 0; earnedPoints = 0; userAnswers = {};
+            document.getElementById('material-area').classList.add('hidden'); 
+            document.getElementById('bottom-nav').classList.add('hidden'); 
+            document.getElementById('quiz-area').classList.remove('hidden'); 
+            renderQuizQuestion();
         }
 
         function renderQuizQuestion() {
             const q = currentQuizzes[currentQuizIndex];
             document.getElementById('quiz-question').innerText = `${currentQuizIndex + 1}. ${q.question}`;
             
-            // Navigasi Nomor Kuis
             const navContainer = document.getElementById('quiz-navigation'); navContainer.innerHTML = '';
             currentQuizzes.forEach((_, idx) => {
                 const isAnswered = userAnswers[idx] ? 'bg-green-100 text-green-700 border-green-300' : 'bg-white text-gray-400 border-gray-200';
@@ -359,7 +471,6 @@
                 navContainer.innerHTML += `<button onclick="jumpToQuiz(${idx})" class="w-8 h-8 rounded-lg border font-bold text-xs flex items-center justify-center transition-all hover:bg-gray-50 ${isAnswered} ${isActive}">${idx + 1}</button>`;
             });
 
-            // Opsi Jawaban
             const c = document.getElementById('quiz-options'); c.innerHTML = '';
             [{id:'A', t:q.option_a}, {id:'B', t:q.option_b}, {id:'C', t:q.option_c}, {id:'D', t:q.option_d}].forEach(o => {
                 if(o.t && o.t !== "-") {
@@ -375,7 +486,6 @@
                 }
             });
 
-            // Tombol Navigasi Bawah Kuis
             document.getElementById('btn-prev-quiz').classList.toggle('hidden', currentQuizIndex === 0);
             const nextBtn = document.getElementById('btn-next-quiz');
             if (currentQuizIndex === currentQuizzes.length - 1) {
@@ -404,12 +514,34 @@
                 </div>`;
         }
         
-        function saveScore() {
+        async function saveScore() {
             const btn = document.getElementById('btn-save-score'); btn.innerText = "Menyimpan ke Server..."; btn.disabled = true;
-            google.script.run.withSuccessHandler(res => { 
-                userData.total_points = res.newTotal; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
-                updateUIForUser(); alert(res.message); closeLearningView(); 
-            }).submitQuizScore(userData.id, activeModuleId, earnedPoints);
+            
+            // Logika Retake
+            const { data: progData } = await supabase.from('user_progress').select('*').eq('user_id', userData.id).eq('module_id', activeModuleId);
+            
+            if(progData && progData.length > 0) {
+                const oldScore = progData[0].score || 0;
+                if(earnedPoints > oldScore) {
+                    const diff = earnedPoints - oldScore;
+                    const finalTotal = userData.total_points + diff;
+                    await supabase.from('user_progress').update({ score: earnedPoints }).eq('id', progData[0].id);
+                    await supabase.from('users').update({ total_points: finalTotal }).eq('id', userData.id);
+                    userData.total_points = finalTotal;
+                    alert('Skor baru lebih tinggi! Poin diperbarui.');
+                } else alert('Selesai! Skor sebelumnya sudah yang tertinggi.');
+            } else {
+                const finalTotal = userData.total_points + earnedPoints;
+                await supabase.from('user_progress').insert([{ user_id: userData.id, module_id: activeModuleId, score: earnedPoints, status: 'completed', progress_percentage: 100 }]);
+                await supabase.from('users').update({ total_points: finalTotal }).eq('id', userData.id);
+                userData.total_points = finalTotal;
+                alert('Poin tersimpan!');
+            }
+            
+            supabase.from('user_tracking').insert([{ user_id: userData.id, activity_type: 'kuis', description: `Selesai kuis modul: ${activeModuleTitle} (${earnedPoints} poin)` }]).then();
+            
+            localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
+            updateUIForUser(); closeLearningView(); 
         }
 
         function closeLearningView() { 
@@ -426,76 +558,6 @@
                     <button id="btn-next-quiz" class="flex-[2] py-4 bg-primary text-white rounded-xl font-bold transition shadow-lg">Berikutnya</button>
                 </div>`;
         }
-
-        // --- AUTH & DOM MANIPULATION (NO RELOAD BUG FIX) ---
-        function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
-        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
-        function toggleAuthMode() { 
-            const isReg = document.getElementById('reg-fields').classList.toggle('hidden'); 
-            document.getElementById('modal-title').innerText = isReg ? 'Daftar Akun Baru' : 'Masuk'; 
-            document.getElementById('btn-auth').innerText = isReg ? 'Buat Akun' : 'Masuk Sekarang'; 
-            document.getElementById('toggle-text').innerText = isReg ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar Akun Baru'; 
-        }
-
-        document.getElementById('authForm').onsubmit = (e) => {
-            e.preventDefault(); 
-            const isReg = !document.getElementById('reg-fields').classList.contains('hidden'); 
-            const btn = document.getElementById('btn-auth'); btn.innerText = "Memproses..."; btn.disabled = true;
-            
-            const data = { 
-                email: document.getElementById('auth-email').value, 
-                pass: document.getElementById('auth-pass').value, 
-                nama: document.getElementById('reg-nama') ? document.getElementById('reg-nama').value : '', 
-                nohp: document.getElementById('reg-nohp') ? document.getElementById('reg-nohp').value : '' 
-            };
-            
-            if(isReg) { 
-                google.script.run.withSuccessHandler(r => { 
-                    btn.innerText = "Daftar Akun"; btn.disabled = false;
-                    if(r.status === 'success') { alert("Pendaftaran Berhasil! Silakan Masuk."); toggleAuthMode(); } else alert(r.message); 
-                }).registerUser(data); 
-            } else { 
-                google.script.run.withSuccessHandler(r => { 
-                    btn.innerText = "Masuk Sekarang"; btn.disabled = false;
-                    if(r.status === 'success'){ 
-                        userData = r.user; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
-                        closeAuthModal(); updateUIForUser(); document.getElementById('authForm').reset();
-                    } else alert(r.message); 
-                }).loginUser(data.email, data.pass); 
-            }
-        };
-
-        function updateUIForUser() { 
-            document.getElementById('greeting-text').innerText = `Halo ${userData.nama_lengkap.split(' ')[0]}! 🌟`; 
-            document.getElementById('user-status-text').innerText = userData.nama_lengkap.split(' ')[0]; 
-            document.getElementById('user-points-text').innerText = userData.total_points + " Pts"; 
-            document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${userData.nama_lengkap}&background=005a9c&color=fff`;
-            
-            document.getElementById('btn-login-menu').classList.add('hidden');
-            document.getElementById('btn-profil-menu').classList.remove('hidden');
-            document.getElementById('btn-logout-menu').classList.remove('hidden');
-            if(userData.role === 'admin') document.getElementById('admin-dropdown-btn').classList.remove('hidden'); 
-        }
-
-        function toggleProfileMenu(e) { e.stopPropagation(); document.getElementById('profile-dropdown').classList.toggle('hidden'); }
-        
-        function logout() { 
-            if(confirm('Apakah Anda yakin ingin keluar?')) {
-                localStorage.removeItem('healthlearn_user'); userData = null;
-                document.getElementById('profile-dropdown').classList.add('hidden');
-                document.getElementById('user-status-text').innerText = 'Masuk';
-                document.getElementById('user-points-text').innerText = '0 Pts';
-                document.getElementById('user-avatar').src = 'https://ui-avatars.com/api/?name=Guest';
-                document.getElementById('greeting-text').innerText = 'Halo! Siap Belajar? 🚀';
-                
-                document.getElementById('btn-login-menu').classList.remove('hidden');
-                document.getElementById('btn-profil-menu').classList.add('hidden');
-                document.getElementById('btn-logout-menu').classList.add('hidden');
-                document.getElementById('admin-dropdown-btn').classList.add('hidden');
-                closeUserDashboard();
-            }
-        }
-        window.onclick = () => document.getElementById('profile-dropdown').classList.add('hidden');
     </script>
 </body>
 </html>
