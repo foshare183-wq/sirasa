@@ -187,450 +187,201 @@
         // MASUKKAN KREDENSIAL SUPABASE KAMU DI SINI
         const SUPABASE_URL = 'https://nhsrvtintqtwwongurrl.supabase.co'; // GANTI INI
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oc3J2dGludHF0d3dvbmd1cnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MzM1MzQsImV4cCI6MjA5MzQwOTUzNH0._vADwO4JvlYfO6iJON1Rqd5_YlfnJeXfZ8hPMTMsZU0'; // GANTI INI
+    
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // NAMA VARIABEL DIGANTI JADI supabaseClient AGAR TIDAK BENTROK
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // GLOBAL ERROR CATCHER (Mencegah blank putih saat error)
+        // GLOBAL ERROR CATCHER
         window.onerror = function(msg, url, line) {
-            alert("Terjadi Error Sistem:\n" + msg + "\n(Baris: " + line + ")");
+            alert("Terjadi Error:\n" + msg + "\n(Baris: " + line + ")");
             const btnLogin = document.getElementById('btn-admin-login');
             if(btnLogin) { btnLogin.innerText = "Masuk Dashboard"; btnLogin.disabled = false; }
-            const btnSave = document.getElementById('btn-save');
-            if(btnSave) { btnSave.innerText = "Publish Modul LMS"; btnSave.disabled = false; }
         };
 
-        // ================= INIT & LOGIN =================
-        window.onload = function() { 
-            try { 
-                if(localStorage.getItem('healthlearn_admin')) showDashboard(); 
-            } catch(e) { console.error(e); } 
-        };
-
+        // INIT & LOGIN
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-admin-login');
-            btn.innerText = "Memeriksa Kredensial..."; 
-            btn.disabled = true;
-
+            const btn = document.getElementById('btn-admin-login'); btn.innerText = "Memeriksa..."; btn.disabled = true;
+            
             const email = document.getElementById('admin-email').value;
             const pass = document.getElementById('admin-pass').value;
 
             try {
-                // Cek kredensial dan role admin langsung ke tabel users
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', email)
-                    .eq('password_hash', pass)
-                    .eq('role', 'admin');
-
-                btn.innerText = "Masuk Dashboard"; 
-                btn.disabled = false;
+                const { data, error } = await supabaseClient.from('users').select('*').eq('email', email).eq('password_hash', pass).eq('role', 'admin');
+                btn.innerText = "Masuk Dashboard"; btn.disabled = false;
                 
-                if(error) throw error;
-
                 if(data && data.length > 0) {
                     localStorage.setItem('healthlearn_admin', JSON.stringify(data[0])); 
                     showDashboard();
                 } else {
-                    alert("Akses Ditolak: Kredensial salah atau Anda bukan Administrator.");
+                    alert("Kredensial salah atau bukan Admin.");
                 }
             } catch(err) {
-                alert("Gagal koneksi ke database: " + err.message);
-                btn.innerText = "Masuk Dashboard"; 
-                btn.disabled = false;
+                alert("Koneksi gagal: " + err.message);
+                btn.innerText = "Masuk Dashboard"; btn.disabled = false;
             }
         };
 
-        function showDashboard() { 
-            document.getElementById('login-view').classList.add('hidden'); 
-            document.getElementById('dashboard-view').classList.remove('hidden'); 
-            loadUsers(); 
-        }
-
-        function logoutAdmin() { 
-            if(confirm('Akhiri sesi Admin secara aman?')) { 
-                localStorage.removeItem('healthlearn_admin'); 
-                location.reload(); 
-            } 
-        }
+        window.onload = function() { if(localStorage.getItem('healthlearn_admin')) showDashboard(); };
+        function showDashboard() { document.getElementById('login-view').classList.add('hidden'); document.getElementById('dashboard-view').classList.remove('hidden'); loadUsers(); }
+        function logoutAdmin() { if(confirm('Akhiri sesi Admin?')) { localStorage.removeItem('healthlearn_admin'); location.reload(); } }
 
         function switchTab(t) {
-            document.querySelectorAll('.tab-btn').forEach(b => { 
-                b.classList.remove('active', 'border-b-2', 'border-primary', 'text-primary'); 
-                b.classList.add('text-gray-400'); 
-            });
+            document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active','border-b-2','border-primary','text-primary'); b.classList.add('text-gray-400'); });
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            
-            document.getElementById('tab-'+t).classList.add('active', 'border-b-2', 'border-primary', 'text-primary');
+            document.getElementById('tab-'+t).classList.add('active','border-b-2','border-primary','text-primary');
             document.getElementById('tab-'+t+'-content').classList.remove('hidden');
-            
             t === 'users' ? loadUsers() : loadModules();
         }
 
-        // ================= USER MANAGEMENT =================
+        // USER MANAGEMENT
         async function loadUsers() {
-            const tbody = document.getElementById('user-table'); 
-            tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center font-bold text-gray-400 animate-pulse">Menarik Data dari Database...</td></tr>';
+            const b = document.getElementById('user-table'); 
+            b.innerHTML = '<tr><td colspan="4" class="p-10 text-center font-bold text-gray-400 animate-pulse">Menarik Data dari Database...</td></tr>';
             
-            try {
-                const { data: users, error } = await supabase
-                    .from('users')
-                    .select('*')
-                    .order('total_points', { ascending: false });
-
-                if(error) throw error;
-                
-                tbody.innerHTML = '';
-                if(!users || users.length === 0) {
-                    return tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center font-bold text-gray-400">Belum ada user yang terdaftar.</td></tr>';
-                }
-
-                users.forEach(user => {
-                    if(user.role === 'admin') return; // Sembunyikan admin dari tabel user
-                    
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-blue-50 border-b border-gray-100 transition duration-200">
-                            <td class="p-6 font-bold text-gray-800">${user.nama_lengkap}</td>
-                            <td class="p-6 text-sm text-gray-500">${user.email}</td>
-                            <td class="p-6 text-center"><span class="bg-blue-100 text-primary px-4 py-1.5 rounded-full font-black text-sm shadow-sm">${user.total_points} Pts</span></td>
-                            <td class="p-6 text-center flex justify-center gap-3">
-                                <button onclick="viewChart('${user.id}', '${user.nama_lengkap}')" class="text-blue-500 bg-white border border-blue-100 shadow-sm hover:bg-blue-500 hover:text-white p-2.5 rounded-xl transition" title="Grafik Progres"><span class="material-symbols-outlined text-sm block">timeline</span></button>
-                                <button onclick="openEditUser('${user.id}', '${user.nama_lengkap}', ${user.total_points})" class="text-orange-500 bg-white border border-orange-100 shadow-sm hover:bg-orange-500 hover:text-white p-2.5 rounded-xl transition" title="Edit Data"><span class="material-symbols-outlined text-sm block">edit</span></button>
-                                <button onclick="delUser('${user.id}')" class="text-red-500 bg-white border border-red-100 shadow-sm hover:bg-red-500 hover:text-white p-2.5 rounded-xl transition" title="Hapus User"><span class="material-symbols-outlined text-sm block">delete</span></button>
-                            </td>
-                        </tr>`;
-                });
-            } catch(err) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center font-bold text-red-500">Gagal memuat: ${err.message}</td></tr>`;
-            }
+            const { data: u, error } = await supabaseClient.from('users').select('*').order('total_points', { ascending: false });
+            if(error || !u || u.length === 0) return b.innerHTML = '<tr><td colspan="4" class="p-10 text-center">Belum ada user.</td></tr>';
+            
+            b.innerHTML = '';
+            u.forEach(user => {
+                if(user.role === 'admin') return;
+                b.innerHTML += `<tr class="hover:bg-gray-50 border-b transition">
+                    <td class="p-6 font-bold text-gray-700">${user.nama_lengkap}</td><td class="p-6 text-sm text-gray-500">${user.email}</td>
+                    <td class="p-6 text-center"><span class="bg-blue-50 text-primary px-4 py-1 rounded-full font-black text-sm">${user.total_points} Pts</span></td>
+                    <td class="p-6 text-center flex justify-center gap-2">
+                        <button onclick="viewChart('${user.id}', '${user.nama_lengkap}')" class="text-blue-500 bg-blue-50 hover:bg-blue-500 hover:text-white p-2 rounded-xl transition" title="Grafik Progres"><span class="material-symbols-outlined text-sm block">timeline</span></button>
+                        <button onclick="openEditUser('${user.id}', '${user.nama_lengkap}', ${user.total_points})" class="text-orange-500 bg-orange-50 hover:bg-orange-500 hover:text-white p-2 rounded-xl transition" title="Edit Data"><span class="material-symbols-outlined text-sm block">edit</span></button>
+                        <button onclick="delUser('${user.id}')" class="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white p-2 rounded-xl transition" title="Hapus User"><span class="material-symbols-outlined text-sm block">delete</span></button>
+                    </td></tr>`;
+            });
         }
-
-        async function delUser(id) { 
-            if(confirm("Peringatan: Hapus akun user ini beserta riwayat progresnya selamanya?")) { 
-                const { error } = await supabase.from('users').delete().eq('id', id);
-                if(!error) loadUsers(); else alert("Gagal menghapus: " + error.message);
-            } 
-        }
+        
+        async function delUser(id) { if(confirm("Hapus akun user ini selamanya?")) { await supabaseClient.from('users').delete().eq('id', id); loadUsers(); } }
 
         function openEditUser(id, nama, poin) {
             document.getElementById('edit-user-modal').classList.remove('hidden');
-            document.getElementById('eu-id').value = id;
-            document.getElementById('eu-nama').value = nama;
-            document.getElementById('eu-poin').value = poin;
+            document.getElementById('eu-id').value = id; document.getElementById('eu-nama').value = nama; document.getElementById('eu-poin').value = poin;
         }
         
         document.getElementById('editUserForm').onsubmit = async (e) => {
-            e.preventDefault(); 
-            const btn = document.getElementById('btn-eu-save'); 
-            btn.innerText = "Menyimpan..."; btn.disabled = true;
-            
-            const payload = { 
-                nama_lengkap: document.getElementById('eu-nama').value, 
-                total_points: parseInt(document.getElementById('eu-poin').value) 
-            };
-            
-            const { error } = await supabase.from('users').update(payload).eq('id', document.getElementById('eu-id').value);
-            
-            btn.disabled = false; btn.innerText = "Simpan Perubahan"; 
-            document.getElementById('edit-user-modal').classList.add('hidden');
-            
-            if(!error) loadUsers(); else alert("Gagal update user: " + error.message);
+            e.preventDefault(); const btn = document.getElementById('btn-eu-save'); btn.innerText = "Menyimpan..."; btn.disabled = true;
+            const payload = { nama_lengkap: document.getElementById('eu-nama').value, total_points: parseInt(document.getElementById('eu-poin').value) };
+            const { error } = await supabaseClient.from('users').update(payload).eq('id', document.getElementById('eu-id').value);
+            btn.disabled = false; btn.innerText = "Simpan Perubahan"; document.getElementById('edit-user-modal').classList.add('hidden');
+            if(!error) loadUsers(); else alert("Gagal update user.");
         };
 
-        // ================= PREMIUM CHART =================
         let myChart = null;
         async function viewChart(id, name) {
-            document.getElementById('chart-modal').classList.remove('hidden'); 
-            document.getElementById('chart-user-name').innerText = "Rapor Kuis: " + name;
+            document.getElementById('chart-modal').classList.remove('hidden'); document.getElementById('chart-user-name').innerText = "Rapor Kuis: " + name;
+            const { data } = await supabaseClient.from('user_progress').select('score, modules(title)').eq('user_id', id);
             
-            try {
-                // Relasi tabel user_progress -> modules (mengambil title modul)
-                const { data, error } = await supabase
-                    .from('user_progress')
-                    .select('score, modules(title)')
-                    .eq('user_id', id);
-
-                if(error) throw error;
-
-                const ctx = document.getElementById('pChart').getContext('2d');
-                if(myChart) myChart.destroy();
-                
-                if(!data || data.length === 0) {
-                    ctx.clearRect(0,0,400,400); 
-                    ctx.font = "bold 16px Manrope, sans-serif"; 
-                    ctx.fillStyle = "#9ca3af"; 
-                    ctx.textAlign = "center";
-                    ctx.fillText("User ini belum mengerjakan kuis apapun.", 200, 150); 
-                    return;
-                }
-
-                let gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                gradient.addColorStop(0, 'rgba(0, 90, 156, 0.5)'); 
-                gradient.addColorStop(1, 'rgba(0, 90, 156, 0.05)');
-
-                myChart = new Chart(ctx, {
-                    type: 'line',
-                    data: { 
-                        labels: data.map(d => d.modules ? d.modules.title.substring(0,15) + '...' : 'Modul Terhapus'), 
-                        datasets: [{ 
-                            label: 'Skor Kuis Terakhir', 
-                            data: data.map(d => d.score), 
-                            borderColor: '#005a9c', 
-                            backgroundColor: gradient, 
-                            borderWidth: 3, 
-                            pointBackgroundColor: '#fff', 
-                            pointBorderColor: '#005a9c', 
-                            pointBorderWidth: 2, 
-                            pointRadius: 6, 
-                            pointHoverRadius: 8,
-                            fill: true, 
-                            tension: 0.4 
-                        }] 
-                    },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false, 
-                        plugins: { legend: { display: false } }, 
-                        scales: { 
-                            y: { beginAtZero: true, suggestedMax: 100 }, 
-                            x: { grid: { display: false } } 
-                        } 
-                    }
-                });
-            } catch (err) {
-                alert("Gagal memuat grafik: " + err.message);
-            }
+            const ctx = document.getElementById('pChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            if(!data || data.length === 0) { ctx.clearRect(0,0,400,400); ctx.font = "16px sans-serif"; ctx.fillStyle = "#9ca3af"; ctx.fillText("User belum mengerjakan kuis apapun.", 50, 100); return; }
+            let gradient = ctx.createLinearGradient(0, 0, 0, 300); gradient.addColorStop(0, 'rgba(0, 90, 156, 0.6)'); gradient.addColorStop(1, 'rgba(0, 90, 156, 0.05)');
+            myChart = new Chart(ctx, {
+                type: 'line', data: { labels: data.map(d => d.modules ? d.modules.title.substring(0,12)+'...' : 'Modul Terhapus'), datasets: [{ label: 'Skor Kuis', data: data.map(d => d.score), borderColor: '#005a9c', backgroundColor: gradient, borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#005a9c', pointBorderWidth: 2, pointRadius: 5, fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 }, x: { grid: { display: false } } } }
+            });
         }
-
         function closeChart() { document.getElementById('chart-modal').classList.add('hidden'); }
 
-        // ================= MODULE CRUD LMS =================
+        // MODULE CRUD
         async function loadModules() {
-            const l = document.getElementById('module-list'); 
-            l.innerHTML = '<div class="col-span-full text-center py-12 font-bold text-gray-400 animate-pulse">Menyiapkan Kurikulum LMS...</div>';
-            
-            try {
-                const { data: modules, error } = await supabase.from('modules').select('*').order('created_at', { ascending: false });
-                if(error) throw error;
-
-                l.innerHTML = '';
-                if(!modules || modules.length === 0) {
-                    return l.innerHTML = '<div class="col-span-full text-center font-bold text-gray-400 py-10 bg-white border-2 border-dashed rounded-3xl">Belum ada modul yang dipublikasikan.</div>';
-                }
-
-                modules.forEach(mod => {
-                    // Penanganan aman untuk title jika mengandung single quote
-                    const safeTitle = mod.title ? mod.title.replace(/'/g, "\\'") : 'Tanpa Judul';
-                    const cover = mod.media_url || 'https://images.unsplash.com/photo-1505751172107';
-
-                    l.innerHTML += `
-                        <div class="bg-white rounded-[2rem] border border-gray-100 shadow-sm flex flex-col group hover:shadow-xl hover:-translate-y-1 transition duration-300 overflow-hidden">
-                            <img src="${cover}" class="w-full h-40 object-cover" onerror="this.src='https://images.unsplash.com/photo-1505751172107'" />
-                            <div class="p-6 flex flex-col flex-grow">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-primary mb-2">${mod.category}</span>
-                                <h4 class="font-bold text-lg mb-4 text-gray-800 line-clamp-2 leading-tight flex-grow">${mod.title}</h4>
-                                <div class="flex gap-2 border-t border-gray-50 pt-4">
-                                    <button onclick="editMod('${mod.id}', '${safeTitle}')" class="flex-1 py-3 bg-gray-50 text-xs font-bold rounded-xl text-gray-600 hover:text-primary hover:bg-blue-50 transition">EDIT MATERI</button>
-                                    <button onclick="delMod('${mod.id}')" class="flex-1 py-3 bg-red-50 text-red-500 text-xs font-bold rounded-xl hover:bg-red-500 hover:text-white transition">HAPUS</button>
-                                </div>
-                            </div>
-                        </div>`;
-                });
-            } catch(err) {
-                l.innerHTML = `<div class="col-span-full text-center font-bold text-red-500 py-10">Error memuat modul: ${err.message}</div>`;
-            }
+            const l = document.getElementById('module-list'); l.innerHTML = '<div class="col-span-full text-center py-10 font-bold text-gray-400 animate-pulse">Memuat Modul LMS...</div>';
+            const { data: m } = await supabaseClient.from('modules').select('*');
+            l.innerHTML = '';
+            if(!m || m.length === 0) return l.innerHTML = '<div class="col-span-full text-center font-bold text-gray-400">Belum ada modul.</div>';
+            m.forEach(mod => {
+                l.innerHTML += `<div class="bg-white p-6 rounded-[2rem] border shadow-sm flex flex-col group hover:shadow-lg transition">
+                    <h4 class="font-bold text-lg mb-4 text-gray-800 line-clamp-2 leading-tight flex-grow">${mod.title}</h4>
+                    <div class="flex gap-2 border-t pt-4">
+                        <button onclick="editMod('${mod.id}', '${mod.title.replace(/'/g, "\\'")}')" class="flex-1 py-2 bg-gray-50 text-xs font-bold rounded-xl text-gray-500 hover:text-primary hover:bg-blue-50 transition">EDIT DATA</button>
+                        <button onclick="delMod('${mod.id}')" class="flex-1 py-2 bg-red-50 text-red-500 text-xs font-bold rounded-xl hover:bg-red-500 hover:text-white transition">HAPUS</button>
+                    </div>
+                </div>`;
+            });
         }
+        async function delMod(id) { if(confirm("Hapus modul beserta pertanyaan kuisnya?")) { await supabaseClient.from('modules').delete().eq('id', id); loadModules(); } }
+        function editMod(id, title) { alert("Mode Edit Aktif. Masukkan ulang alur Materi & Kuis yang baru."); document.getElementById('mod-id').value = id; document.getElementById('mod-title').value = title; openModal(); }
 
-        async function delMod(id) { 
-            if(confirm("Tindakan ini tidak bisa dibatalkan. Hapus modul beserta semua halaman materi dan pertanyaan kuisnya?")) { 
-                const { error } = await supabase.from('modules').delete().eq('id', id); 
-                if(!error) loadModules(); else alert("Gagal menghapus: " + error.message);
-            } 
-        }
-
-        function editMod(id, title) { 
-            alert("Mode Edit Aktif.\nSilakan masukkan ulang seluruh Alur Materi & Kuis yang baru (konten yang lama akan tertimpa/replace)."); 
-            document.getElementById('mod-id').value = id; 
-            document.getElementById('mod-title').value = title; 
-            openModal(); 
-        }
-
-        // ================= DYNAMIC COURSE BUILDER =================
-        function openModal() { 
-            document.getElementById('modal').classList.remove('hidden'); 
-            document.body.style.overflow = 'hidden'; // Kunci background scroll
-            if(document.getElementById('page-container').children.length === 0) addPage(); 
-        }
-        
-        function closeModal() { 
-            document.getElementById('modal').classList.add('hidden'); 
-            document.body.style.overflow = 'auto';
-            document.getElementById('moduleForm').reset(); 
-            document.getElementById('page-container').innerHTML = ''; 
-            document.getElementById('quiz-container').innerHTML = ''; 
-            document.getElementById('mod-id').value = ''; 
-        }
+        function openModal() { document.getElementById('modal').classList.remove('hidden'); if(document.getElementById('page-container').children.length===0) addPage(); }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.getElementById('moduleForm').reset(); document.getElementById('page-container').innerHTML = ''; document.getElementById('quiz-container').innerHTML = ''; document.getElementById('mod-id').value=''; }
 
         function addPage() {
-            const d = document.createElement('div'); 
-            d.className = "p-5 bg-white border-2 border-blue-50 rounded-2xl relative page-item shadow-sm transition hover:border-blue-200";
-            d.innerHTML = `
-                <div class="flex flex-col sm:flex-row gap-3 mb-4">
-                    <select class="p-3.5 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 text-gray-700 outline-none p-type sm:w-1/3 focus:border-primary transition" onchange="togglePUI(this)">
-                        <option value="youtube">📺 Embed (YouTube/Google Slides)</option>
-                        <option value="article">📝 Artikel HTML / WordPress</option>
-                    </select>
-                    <input type="text" placeholder="Judul Halaman Materi" required class="flex-1 p-3.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 p-title outline-none focus:border-primary transition">
-                </div>
-                <div class="p-ui-area bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <input type="url" placeholder="Paste Link Embed URL (Misal: https://youtube.com/embed/xyz)" required class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm p-data outline-none focus:border-primary transition">
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-md hover:scale-110 hover:bg-red-600 transition">×</button>
-            `;
+            const d = document.createElement('div'); d.className = "p-5 bg-white border-2 border-blue-50 rounded-2xl relative page-item shadow-sm transition hover:border-blue-200";
+            d.innerHTML = `<div class="flex flex-col sm:flex-row gap-3 mb-4"><select class="p-3.5 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 text-gray-700 outline-none p-type sm:w-1/3 focus:border-primary transition" onchange="togglePUI(this)"><option value="youtube">📺 Embed (YT/Slides)</option><option value="article">📝 Artikel HTML</option></select><input type="text" placeholder="Judul Halaman Materi" required class="flex-1 p-3.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 p-title outline-none focus:border-primary transition"></div><div class="p-ui-area bg-gray-50 p-4 rounded-xl border border-gray-100"><input type="url" placeholder="Paste Link Embed URL" required class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm p-data outline-none focus:border-primary transition"></div><button type="button" onclick="this.parentElement.remove()" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-md hover:scale-110 hover:bg-red-600 transition">×</button>`;
             document.getElementById('page-container').appendChild(d);
         }
-
         function togglePUI(s) {
             const a = s.closest('.page-item').querySelector('.p-ui-area');
             if(s.value === 'article') {
-                a.innerHTML = `
-                    <input type="url" placeholder="URL Gambar Header Artikel (Opsional)" class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm mb-3 p-data-img outline-none focus:border-primary transition" title="Gambar akan muncul estetik di atas teks bacaan">
-                    <textarea class="w-full p-4 bg-white border border-gray-200 rounded-xl text-sm p-data-text outline-none focus:border-primary transition leading-relaxed" required placeholder="Ketik isi materi di sini... (Anda juga dapat menggunakan tag HTML dasar seperti <b>, <i>, <br> jika paham)" rows="6"></textarea>
-                `;
+                a.innerHTML = `<input type="url" placeholder="URL Gambar Header Artikel (Opsional)" class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm mb-3 p-data-img outline-none focus:border-primary transition"><textarea class="w-full p-4 bg-white border border-gray-200 rounded-xl text-sm p-data-text outline-none focus:border-primary transition leading-relaxed" required placeholder="Ketik isi materi artikel di sini..." rows="6"></textarea>`;
             } else {
                 a.innerHTML = '<input type="url" placeholder="Paste Link Embed (Youtube/Google Slides Publik)" required class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm p-data outline-none focus:border-primary transition">';
             }
         }
 
         function addQuiz() {
-            const d = document.createElement('div'); 
-            d.className = "p-5 bg-white border-2 border-orange-50 rounded-2xl relative quiz-item shadow-sm transition hover:border-orange-200";
-            d.innerHTML = `
-                <div class="bg-orange-50 p-4 rounded-xl border border-orange-100 mb-4">
-                    <select class="w-full sm:w-auto mb-3 p-2.5 border border-orange-200 rounded-xl text-sm font-bold bg-white text-orange-600 outline-none focus:border-orange-400 transition q-jenis" onchange="toggleQUI(this)">
-                        <option value="mc">Pilihan Ganda (A-D)</option>
-                        <option value="tf">Benar / Salah Saja</option>
-                    </select>
-                    <input type="text" placeholder="Tuliskan Pertanyaan Kuis di sini..." required class="w-full p-3.5 border border-orange-200 rounded-xl text-sm font-bold text-gray-800 focus:border-orange-400 outline-none transition q-question">
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 q-opt-area">
-                    <div class="flex items-center gap-2"><span class="font-black text-gray-300 w-4">A</span> <input type="text" placeholder="Teks Jawaban Opsi A" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-a" required></div>
-                    <div class="flex items-center gap-2"><span class="font-black text-gray-300 w-4">B</span> <input type="text" placeholder="Teks Jawaban Opsi B" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-b" required></div>
-                    <div class="flex items-center gap-2 mc-only"><span class="font-black text-gray-300 w-4">C</span> <input type="text" placeholder="Teks Jawaban Opsi C" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-c" required></div>
-                    <div class="flex items-center gap-2 mc-only"><span class="font-black text-gray-300 w-4">D</span> <input type="text" placeholder="Teks Jawaban Opsi D" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-d" required></div>
-                </div>
-                
-                <select class="w-full p-3.5 border border-gray-200 rounded-xl text-sm font-black bg-gray-50 text-gray-700 outline-none focus:border-orange-400 transition q-correct">
-                    <option value="A">⭐ Kunci Jawaban: A</option>
-                    <option value="B">⭐ Kunci Jawaban: B</option>
-                    <option value="C" class="mc-only">⭐ Kunci Jawaban: C</option>
-                    <option value="D" class="mc-only">⭐ Kunci Jawaban: D</option>
-                </select>
-                <button type="button" onclick="this.parentElement.remove()" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-md hover:scale-110 hover:bg-red-600 transition">×</button>
-            `;
+            const d = document.createElement('div'); d.className = "p-5 bg-white border-2 border-orange-50 rounded-2xl relative quiz-item shadow-sm transition hover:border-orange-200";
+            d.innerHTML = `<div class="bg-orange-50 p-4 rounded-xl border border-orange-100 mb-4"><select class="w-full sm:w-auto mb-3 p-2.5 border border-orange-200 rounded-xl text-sm font-bold bg-white text-orange-600 outline-none focus:border-orange-400 transition q-jenis" onchange="toggleQUI(this)"><option value="mc">Pilihan Ganda (A-D)</option><option value="tf">Benar / Salah Saja</option></select><input type="text" placeholder="Tuliskan Pertanyaan Kuis di sini..." required class="w-full p-3.5 border border-orange-200 rounded-xl text-sm font-bold text-gray-800 focus:border-orange-400 outline-none transition q-question"></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 q-opt-area"><div class="flex items-center gap-2"><span class="font-black text-gray-300 w-4">A</span> <input type="text" placeholder="Teks Jawaban Opsi A" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-a" required></div><div class="flex items-center gap-2"><span class="font-black text-gray-300 w-4">B</span> <input type="text" placeholder="Teks Jawaban Opsi B" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-b" required></div><div class="flex items-center gap-2 mc-only"><span class="font-black text-gray-300 w-4">C</span> <input type="text" placeholder="Teks Jawaban Opsi C" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-c" required></div><div class="flex items-center gap-2 mc-only"><span class="font-black text-gray-300 w-4">D</span> <input type="text" placeholder="Teks Jawaban Opsi D" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-d" required></div></div><select class="w-full p-3.5 border border-gray-200 rounded-xl text-sm font-black bg-gray-50 text-gray-700 outline-none focus:border-orange-400 transition q-correct"><option value="A">⭐ Kunci Jawaban: A</option><option value="B">⭐ Kunci Jawaban: B</option><option value="C" class="mc-only">⭐ Kunci Jawaban: C</option><option value="D" class="mc-only">⭐ Kunci Jawaban: D</option></select><button type="button" onclick="this.parentElement.remove()" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-md hover:scale-110 hover:bg-red-600 transition">×</button>`;
             document.getElementById('quiz-container').appendChild(d);
         }
-
         function toggleQUI(s) {
-            const item = s.closest('.quiz-item'); 
-            const inA = item.querySelector('.q-a'); const inB = item.querySelector('.q-b'); 
-            const mcOnly = item.querySelectorAll('.mc-only');
-            
-            if(s.value === 'tf') { 
-                inA.value = "Benar"; inA.readOnly = true; inA.classList.add('bg-gray-100', 'text-gray-500'); 
-                inB.value = "Salah"; inB.readOnly = true; inB.classList.add('bg-gray-100', 'text-gray-500'); 
-                mcOnly.forEach(el => { el.style.display = 'none'; el.removeAttribute('required'); });
-            } else { 
-                inA.value = ""; inA.readOnly = false; inA.classList.remove('bg-gray-100', 'text-gray-500'); 
-                inB.value = ""; inB.readOnly = false; inB.classList.remove('bg-gray-100', 'text-gray-500'); 
-                mcOnly.forEach(el => { el.style.display = 'flex'; el.tagName==='INPUT' ? el.setAttribute('required', 'true') : null; });
-            }
+            const item = s.closest('.quiz-item'); const inA = item.querySelector('.q-a'); const inB = item.querySelector('.q-b'); const mcOnly = item.querySelectorAll('.mc-only');
+            if(s.value === 'tf') { inA.value = "Benar"; inA.readOnly = true; inA.classList.add('bg-gray-100', 'text-gray-500'); inB.value = "Salah"; inB.readOnly = true; inB.classList.add('bg-gray-100', 'text-gray-500'); mcOnly.forEach(el => { el.style.display = 'none'; el.removeAttribute('required'); });
+            } else { inA.value = ""; inA.readOnly = false; inA.classList.remove('bg-gray-100', 'text-gray-500'); inB.value = ""; inB.readOnly = false; inB.classList.remove('bg-gray-100', 'text-gray-500'); mcOnly.forEach(el => { el.style.display = 'flex'; el.tagName==='INPUT' ? el.setAttribute('required', 'true') : null; }); }
         }
 
-        // ================= SAVE DATA TO SUPABASE =================
         document.getElementById('moduleForm').onsubmit = async (e) => {
-            e.preventDefault(); 
-            const btn = document.getElementById('btn-save'); 
-            btn.innerText = "Merakit & Menyimpan ke Database..."; 
-            btn.disabled = true;
-
+            e.preventDefault(); const btn = document.getElementById('btn-save'); btn.innerText = "Merakit & Menyimpan ke Database..."; btn.disabled = true;
             try {
-                // 1. Ekstrak Cover URL (Pakai Link untuk integrasi Netlify yg aman tanpa Storage bucket setup)
                 let finalCoverUrl = document.getElementById('mod-img-link').value || "https://images.unsplash.com/photo-1505751172107-597d5a4d4b9c?w=800&q=80";
-
-                // 2. Format Halaman Materi
                 const pages = [];
                 for(let el of document.querySelectorAll('.page-item')) {
-                    let type = el.querySelector('.p-type').value; 
-                    let dataHTML = "";
-                    
+                    let type = el.querySelector('.p-type').value; let dataHTML = "";
                     if (type === 'article') {
-                        const imgUrl = el.querySelector('.p-data-img').value; 
-                        const rawText = el.querySelector('.p-data-text').value.replace(/\n/g, '<br/>'); 
+                        const imgUrl = el.querySelector('.p-data-img').value; const rawText = el.querySelector('.p-data-text').value.replace(/\n/g, '<br/>'); 
                         dataHTML = (imgUrl ? `<img src="${imgUrl}" class="w-full h-auto max-h-96 rounded-3xl mb-8 shadow-sm object-cover border border-gray-100" />` : '') + `<div class="prose max-w-none text-gray-700 leading-relaxed text-lg">${rawText}</div>`;
-                    } else { 
-                        // YouTube atau Embed Slides
-                        dataHTML = el.querySelector('.p-data').value; 
-                    }
+                    } else { dataHTML = el.querySelector('.p-data').value; }
                     pages.push({ type, title: el.querySelector('.p-title').value, data: dataHTML });
                 }
 
-                // 3. Format Kuis
                 const quizzes = Array.from(document.querySelectorAll('.quiz-item')).map(el => ({
-                    question: el.querySelector('.q-question').value, 
-                    option_a: el.querySelector('.q-a').value, 
-                    option_b: el.querySelector('.q-b').value,
-                    option_c: el.querySelector('.q-c')?.value || "-", 
-                    option_d: el.querySelector('.q-d')?.value || "-", 
-                    correct_answer: el.querySelector('.q-correct').value
+                    question: el.querySelector('.q-question').value, option_a: el.querySelector('.q-a').value, option_b: el.querySelector('.q-b').value,
+                    option_c: el.querySelector('.q-c')?.value || "-", option_d: el.querySelector('.q-d')?.value || "-", correct_answer: el.querySelector('.q-correct').value
                 }));
 
-                // 4. Proses Simpan ke Supabase DB
                 let modId = document.getElementById('mod-id').value;
-                const modulePayload = { 
-                    title: document.getElementById('mod-title').value, 
-                    category: document.getElementById('mod-cat').value, 
-                    summary: document.getElementById('mod-sum').value, 
-                    media_url: finalCoverUrl 
-                };
+                const modulePayload = { title: document.getElementById('mod-title').value, category: document.getElementById('mod-cat').value, summary: document.getElementById('mod-sum').value, media_url: finalCoverUrl };
 
                 if(modId) {
-                    // Update Mode: Timpa Modul Induk, Hapus Anak-anaknya, Insert Ulang Anak-anaknya
-                    const { error: errMod } = await supabase.from('modules').update(modulePayload).eq('id', modId);
+                    const { error: errMod } = await supabaseClient.from('modules').update(modulePayload).eq('id', modId);
                     if(errMod) throw errMod;
-                    
-                    await supabase.from('module_contents').delete().eq('module_id', modId);
-                    await supabase.from('quizzes').delete().eq('module_id', modId);
+                    await supabaseClient.from('module_contents').delete().eq('module_id', modId);
+                    await supabaseClient.from('quizzes').delete().eq('module_id', modId);
                 } else {
-                    // Insert Mode
-                    const { data: insMod, error: errIns } = await supabase.from('modules').insert([modulePayload]).select();
+                    const { data: insMod, error: errIns } = await supabaseClient.from('modules').insert([modulePayload]).select();
                     if(errIns) throw errIns;
                     modId = insMod[0].id;
                 }
 
-                // Insert Konten & Kuis jika ada
                 if(pages.length > 0) {
                     const mappedPages = pages.map((p, i) => ({ module_id: modId, content_type: p.type, title: p.title, content_data: p.data, order_index: i+1 }));
-                    const { error: errPage } = await supabase.from('module_contents').insert(mappedPages);
+                    const { error: errPage } = await supabaseClient.from('module_contents').insert(mappedPages);
                     if(errPage) throw errPage;
                 }
                 
                 if(quizzes.length > 0) {
                     const mappedQuizzes = quizzes.map(q => ({ module_id: modId, ...q, points_reward: 20 }));
-                    const { error: errQuiz } = await supabase.from('quizzes').insert(mappedQuizzes);
+                    const { error: errQuiz } = await supabaseClient.from('quizzes').insert(mappedQuizzes);
                     if(errQuiz) throw errQuiz;
                 }
 
-                alert("Selesai! Kurikulum Modul Berhasil Dipublikasikan ke LMS."); 
-                location.reload();
-
-            } catch(err) { 
-                alert("Proses Simpan Gagal: " + err.message); 
-                btn.innerText = "Publish Modul LMS"; 
-                btn.disabled = false; 
-            }
+                alert("Selesai! Kurikulum Modul Berhasil Dipublikasikan ke LMS."); location.reload();
+            } catch(err) { alert("Proses Simpan Gagal: " + err.message); btn.innerText = "Publish Modul LMS"; btn.disabled = false; }
         };
     </script>
 </body>
