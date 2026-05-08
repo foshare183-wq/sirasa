@@ -186,7 +186,9 @@
         const SUPABASE_URL = 'https://nhsrvtintqtwwongurrl.supabase.co'; // Ganti dengan Project URL
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oc3J2dGludHF0d3dvbmd1cnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MzM1MzQsImV4cCI6MjA5MzQwOTUzNH0._vADwO4JvlYfO6iJON1Rqd5_YlfnJeXfZ8hPMTMsZU0'; // Ganti dengan Anon Key
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+       
+        // NAMA VARIABEL DIGANTI JADI supabaseClient AGAR TIDAK BENTROK
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let userData = null; let allModules = []; let currentModuleData = []; let currentPartIndex = 0; let activeModuleId = ""; 
         let currentQuizzes = []; let currentQuizIndex = 0; let earnedPoints = 0; let userAnswers = {};
@@ -194,17 +196,14 @@
 
         // INIT & CEK LOGIN GOOGLE
         window.onload = async function() { 
-            // Cek jika user login pakai Google Oauth (Session Token)
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if(session) {
-                // Cari data user di tabel custom kita (berdasarkan email Google)
-                const { data: uData } = await supabase.from('users').select('*').eq('email', session.user.email);
+                const { data: uData } = await supabaseClient.from('users').select('*').eq('email', session.user.email);
                 if(uData && uData.length > 0) {
                     userData = uData[0];
                     localStorage.setItem('healthlearn_user', JSON.stringify(userData));
                 } else {
-                    // Jika login Google pertama kali, buat akun otomatis di tabel users
-                    const { data: newU } = await supabase.from('users').insert([{
+                    const { data: newU } = await supabaseClient.from('users').insert([{
                         nama_lengkap: session.user.user_metadata.full_name || 'User Google',
                         email: session.user.email, password_hash: 'GOOGLE_AUTH', role: 'user', total_points: 0
                     }]).select('*');
@@ -221,7 +220,7 @@
 
         // --- AUTH & LOGIN ---
         async function loginWithGoogle() {
-            const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
             if (error) alert("Gagal koneksi ke Google: " + error.message);
         }
 
@@ -248,25 +247,21 @@
                 const nohp = document.getElementById('reg-nohp').value;
                 const tgl = document.getElementById('reg-tgl').value;
                 
-                // Cek Email
-                const { data: check } = await supabase.from('users').select('id').eq('email', email);
+                const { data: check } = await supabaseClient.from('users').select('id').eq('email', email);
                 if(check.length > 0) {
                     alert('Email sudah terdaftar.'); btn.innerText = "Buat Akun"; btn.disabled = false; return;
                 }
                 
-                // Insert User
-                const { error } = await supabase.from('users').insert([{ nama_lengkap: nama, email: email, nomor_hp: nohp, tanggal_lahir: tgl, password_hash: pass, role: 'user', total_points: 0 }]);
+                const { error } = await supabaseClient.from('users').insert([{ nama_lengkap: nama, email: email, nomor_hp: nohp, tanggal_lahir: tgl, password_hash: pass, role: 'user', total_points: 0 }]);
                 btn.disabled = false;
                 if(!error) { alert("Pendaftaran Berhasil! Silakan Masuk."); toggleAuthMode(); } else { alert("Gagal daftar: " + error.message); btn.innerText = "Buat Akun"; }
             } else { 
-                // Login Manual
-                const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password_hash', pass);
+                const { data, error } = await supabaseClient.from('users').select('*').eq('email', email).eq('password_hash', pass);
                 btn.disabled = false;
                 if(data && data.length > 0){ 
                     userData = data[0]; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
                     closeAuthModal(); updateUIForUser(); document.getElementById('authForm').reset();
-                    // Log Aktivitas
-                    supabase.from('user_tracking').insert([{ user_id: userData.id, activity_type: 'login', description: 'User login.' }]).then();
+                    supabaseClient.from('user_tracking').insert([{ user_id: userData.id, activity_type: 'login', description: 'User login.' }]).then();
                 } else { alert("Email atau Password salah."); btn.innerText = "Masuk Sekarang"; } 
             }
         };
@@ -286,7 +281,7 @@
         function toggleProfileMenu(e) { e.stopPropagation(); document.getElementById('profile-dropdown').classList.toggle('hidden'); }
         async function logout() { 
             if(confirm('Apakah Anda yakin ingin keluar?')) {
-                await supabase.auth.signOut(); // Logout session Google
+                await supabaseClient.auth.signOut();
                 localStorage.removeItem('healthlearn_user'); userData = null;
                 document.getElementById('profile-dropdown').classList.add('hidden');
                 document.getElementById('user-status-text').innerText = 'Masuk';
@@ -336,7 +331,7 @@
         }
 
         async function loadUserChart() {
-            const { data, error } = await supabase.from('user_progress').select('score, modules(title)').eq('user_id', userData.id);
+            const { data, error } = await supabaseClient.from('user_progress').select('score, modules(title)').eq('user_id', userData.id);
             if(error || !data || data.length === 0) return;
 
             const ctx = document.getElementById('userProgressChart').getContext('2d');
@@ -353,7 +348,7 @@
         document.getElementById('editProfilForm').onsubmit = async (e) => {
             e.preventDefault(); const btn = document.getElementById('btn-ep-save'); btn.innerText = "Menyimpan...";
             const payload = { nama_lengkap: document.getElementById('ep-nama').value, nomor_hp: document.getElementById('ep-nohp').value };
-            const { error } = await supabase.from('users').update(payload).eq('id', userData.id);
+            const { error } = await supabaseClient.from('users').update(payload).eq('id', userData.id);
             btn.innerText = "Update Profil";
             if(!error) {
                 userData.nama_lengkap = payload.nama_lengkap; userData.nomor_hp = payload.nomor_hp;
@@ -362,7 +357,7 @@
         };
 
         async function loadMentoring() {
-            const { data } = await supabase.from('mentoring').select('*').eq('user_id', userData.id).order('schedule', { ascending: true });
+            const { data } = await supabaseClient.from('mentoring').select('*').eq('user_id', userData.id).order('schedule', { ascending: true });
             const list = document.getElementById('mentoring-list'); list.innerHTML = '';
             if(!data || data.length === 0) { list.innerHTML = '<p class="text-sm text-gray-400">Belum ada jadwal diajukan.</p>'; return; }
             data.forEach(d => list.innerHTML += `<div class="p-4 border rounded-xl bg-gray-50 flex justify-between items-center"><div class="flex-1"><p class="font-bold text-sm text-gray-800">${d.topic}</p><p class="text-xs text-gray-500">${new Date(d.schedule).toLocaleString()}</p></div><span class="text-[10px] font-black uppercase px-3 py-1 rounded-md ${d.status==='pending'?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600'}">${d.status}</span></div>`);
@@ -370,13 +365,13 @@
         
         document.getElementById('mentoringForm').onsubmit = async (e) => {
             e.preventDefault();
-            const { error } = await supabase.from('mentoring').insert([{ user_id: userData.id, topic: document.getElementById('m-topic').value, schedule: document.getElementById('m-date').value }]);
+            const { error } = await supabaseClient.from('mentoring').insert([{ user_id: userData.id, topic: document.getElementById('m-topic').value, schedule: document.getElementById('m-date').value }]);
             if(!error) { alert('Jadwal diajukan!'); document.getElementById('m-topic').value=''; loadMentoring(); }
         };
 
         // --- MODULE & LEARNING ---
         async function loadModules() { 
-            const { data, error } = await supabase.from('modules').select('*');
+            const { data, error } = await supabaseClient.from('modules').select('*');
             if(data) { allModules = data; renderModules(data); }
         }
         
@@ -407,8 +402,7 @@
                 document.getElementById('bottom-nav').classList.remove('hidden'); 
                 document.body.style.overflow = 'hidden'; 
                 
-                // Ambil materi dari DB
-                const { data } = await supabase.from('module_contents').select('*').eq('module_id', id).order('order_index', { ascending: true });
+                const { data } = await supabaseClient.from('module_contents').select('*').eq('module_id', id).order('order_index', { ascending: true });
                 currentModuleData = data || []; currentPartIndex = 0; renderPart(); 
             }
         }
@@ -450,7 +444,7 @@
         // --- KUIS DINAMIS ---
         async function startQuiz() {
             document.getElementById('next-part').innerText = "Tunggu...";
-            const { data } = await supabase.from('quizzes').select('*').eq('module_id', activeModuleId);
+            const { data } = await supabaseClient.from('quizzes').select('*').eq('module_id', activeModuleId);
             
             if(!data || data.length === 0) { alert("Belum ada kuis."); return closeLearningView(); }
             currentQuizzes = data; currentQuizIndex = 0; earnedPoints = 0; userAnswers = {};
@@ -517,28 +511,27 @@
         async function saveScore() {
             const btn = document.getElementById('btn-save-score'); btn.innerText = "Menyimpan ke Server..."; btn.disabled = true;
             
-            // Logika Retake
-            const { data: progData } = await supabase.from('user_progress').select('*').eq('user_id', userData.id).eq('module_id', activeModuleId);
+            const { data: progData } = await supabaseClient.from('user_progress').select('*').eq('user_id', userData.id).eq('module_id', activeModuleId);
             
             if(progData && progData.length > 0) {
                 const oldScore = progData[0].score || 0;
                 if(earnedPoints > oldScore) {
                     const diff = earnedPoints - oldScore;
                     const finalTotal = userData.total_points + diff;
-                    await supabase.from('user_progress').update({ score: earnedPoints }).eq('id', progData[0].id);
-                    await supabase.from('users').update({ total_points: finalTotal }).eq('id', userData.id);
+                    await supabaseClient.from('user_progress').update({ score: earnedPoints }).eq('id', progData[0].id);
+                    await supabaseClient.from('users').update({ total_points: finalTotal }).eq('id', userData.id);
                     userData.total_points = finalTotal;
                     alert('Skor baru lebih tinggi! Poin diperbarui.');
                 } else alert('Selesai! Skor sebelumnya sudah yang tertinggi.');
             } else {
                 const finalTotal = userData.total_points + earnedPoints;
-                await supabase.from('user_progress').insert([{ user_id: userData.id, module_id: activeModuleId, score: earnedPoints, status: 'completed', progress_percentage: 100 }]);
-                await supabase.from('users').update({ total_points: finalTotal }).eq('id', userData.id);
+                await supabaseClient.from('user_progress').insert([{ user_id: userData.id, module_id: activeModuleId, score: earnedPoints, status: 'completed', progress_percentage: 100 }]);
+                await supabaseClient.from('users').update({ total_points: finalTotal }).eq('id', userData.id);
                 userData.total_points = finalTotal;
                 alert('Poin tersimpan!');
             }
             
-            supabase.from('user_tracking').insert([{ user_id: userData.id, activity_type: 'kuis', description: `Selesai kuis modul: ${activeModuleTitle} (${earnedPoints} poin)` }]).then();
+            supabaseClient.from('user_tracking').insert([{ user_id: userData.id, activity_type: 'kuis', description: `Selesai kuis modul: ${activeModuleTitle} (${earnedPoints} poin)` }]).then();
             
             localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
             updateUIForUser(); closeLearningView(); 
