@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#005a9c">
+    
+    <title>HealthLearn - App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script> tailwind.config = { theme: { extend: { colors: { primary: "#005a9c", secondary: "#f0f4f8", accent: "#ef4444" }, fontFamily: { headline: ["Lexend"], body: ["Manrope"] } } } } </script>
+    <style>
+        .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .tab-btn-user.active { background-color: #eff6ff; color: #005a9c; border-left: 4px solid #005a9c; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-secondary font-body text-gray-800 min-h-screen pb-20 md:pb-0">
+
+    <!-- TOP NAVBAR -->
+    <nav class="glass-nav fixed top-0 w-full z-40 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="closeUserDashboard()">
+            <div class="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-md">H</div>
+            <span class="font-headline text-xl font-bold text-primary tracking-tight hidden sm:block">HealthLearn</span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <button onclick="toggleProfileMenu(event)" id="profile-btn" class="flex items-center gap-3 bg-white px-2 py-2 pr-4 rounded-full border shadow-sm transition hover:bg-gray-50">
+                <img id="user-avatar" src="https://ui-avatars.com/api/?name=Guest" class="w-9 h-9 rounded-full" />
+                <div class="flex flex-col text-left hidden sm:flex">
+                    <span id="user-status-text" class="font-bold text-sm leading-none">Masuk</span>
+                    <span id="user-points-text" class="text-[10px] text-gray-400 mt-1 font-black leading-none uppercase">0 Pts</span>
+                </div>
+            </button>
+            <div id="profile-dropdown" class="hidden absolute right-6 top-20 w-56 bg-white rounded-2xl shadow-2xl border p-2 z-50">
+                <button id="btn-profil-menu" onclick="openUserDashboard()" class="hidden flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-600 hover:bg-blue-50 hover:text-primary font-bold rounded-xl transition">
+                    <span class="material-symbols-outlined">person</span> Profil Saya
+                </button>
+                <button onclick="checkAccess('admin')" id="admin-dropdown-btn" class="hidden flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition">
+                    <span class="material-symbols-outlined">dashboard</span> Panel Admin
+                </button>
+                <button id="btn-logout-menu" onclick="logout()" class="hidden flex items-center gap-3 w-full px-4 py-3 text-sm text-red-500 font-bold hover:bg-red-50 rounded-xl transition">
+                    <span class="material-symbols-outlined">logout</span> Keluar
+                </button>
+                <button id="btn-login-menu" onclick="openAuthModal()" class="flex items-center gap-3 w-full px-4 py-3 text-sm text-primary font-bold hover:bg-blue-50 rounded-xl transition">
+                    <span class="material-symbols-outlined">login</span> Masuk Akun
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT (BERANDA) -->
+    <main id="main-view" class="max-w-7xl mx-auto px-4 md:px-6 pt-28 pb-6">
+        <div class="bg-gradient-to-br from-[#00478d] to-[#0073e6] rounded-[2rem] p-8 md:p-12 text-white mb-8 shadow-xl">
+            <h1 id="greeting-text" class="font-headline text-2xl md:text-4xl font-bold mb-2">Halo! Siap Belajar? 🚀</h1>
+            <p class="text-blue-100 text-sm md:text-base opacity-90 max-w-xl">Pilih modul, kumpulkan poin, dan tingkatkan prestasimu di leaderboard.</p>
+        </div>
+        <div id="course-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+    </main>
+
+    <!-- DASHBOARD USER -->
+    <section id="user-dashboard-view" class="hidden fixed inset-0 bg-secondary z-50 overflow-y-auto pt-24 pb-20 md:pb-6">
+        <div class="max-w-6xl mx-auto px-4 md:px-6 flex flex-col md:flex-row gap-6">
+            <div class="w-full md:w-1/4">
+                <div class="bg-white rounded-3xl p-4 border shadow-sm flex flex-row md:flex-col gap-2 overflow-x-auto hide-scroll">
+                    <button onclick="switchUserTab('rapor')" id="tab-rapor" class="tab-btn-user active flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl whitespace-nowrap transition"><span class="material-symbols-outlined">emoji_events</span> Rapor & Reward</button>
+                    <button onclick="switchUserTab('profil')" id="tab-profil" class="tab-btn-user flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl whitespace-nowrap transition"><span class="material-symbols-outlined">manage_accounts</span> Edit Profil</button>
+                    <button onclick="switchUserTab('mentoring')" id="tab-mentoring" class="tab-btn-user flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl whitespace-nowrap transition"><span class="material-symbols-outlined">support_agent</span> Mentoring</button>
+                    <button onclick="closeUserDashboard()" class="flex items-center gap-3 px-4 py-3 text-sm text-red-500 font-bold rounded-xl md:mt-4 whitespace-nowrap"><span class="material-symbols-outlined">arrow_back</span> Kembali</button>
+                </div>
+            </div>
+
+            <div class="w-full md:w-3/4">
+                <!-- Rapor -->
+                <div id="content-rapor" class="user-tab-content space-y-6">
+                    <div class="bg-white rounded-3xl p-6 border shadow-sm flex items-center gap-6">
+                        <div id="reward-badge" class="w-20 h-20 bg-blue-50 text-4xl flex items-center justify-center rounded-full shadow-inner border border-blue-100">🌱</div>
+                        <div>
+                            <h3 class="font-headline font-bold text-xl mb-1">Status Prestasi</h3>
+                            <p id="reward-text" class="text-sm text-gray-500 font-bold mb-2">Health Beginner</p>
+                            <span id="user-dashboard-points" class="bg-primary text-white text-xs font-black px-3 py-1 rounded-full">0 Poin Total</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-3xl p-6 border shadow-sm">
+                        <h3 class="font-headline font-bold mb-6">Grafik Progres Belajar</h3>
+                        <div class="h-64 w-full"><canvas id="userProgressChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Profil -->
+                <div id="content-profil" class="user-tab-content hidden">
+                    <div class="bg-white rounded-3xl p-6 border shadow-sm">
+                        <h3 class="font-headline font-bold text-xl mb-6">Informasi Akun</h3>
+                        <form id="editProfilForm" class="space-y-4 max-w-md">
+                            <div><label class="text-xs font-bold text-gray-400">Nama Lengkap</label><input type="text" id="ep-nama" required class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:border-primary"></div>
+                            <div><label class="text-xs font-bold text-gray-400">Nomor HP (WA)</label><input type="tel" id="ep-nohp" placeholder="08xxx" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:border-primary"></div>
+                            <div><label class="text-xs font-bold text-gray-400">Email (Tidak dapat diubah)</label><input type="email" id="ep-email" disabled class="w-full p-3 bg-gray-100 border rounded-xl outline-none text-gray-400"></div>
+                            <button type="submit" id="btn-ep-save" class="w-full bg-primary text-white font-bold py-4 rounded-xl mt-4 shadow-lg hover:bg-blue-800 transition">Update Profil</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Mentoring -->
+                <div id="content-mentoring" class="user-tab-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 border shadow-sm">
+                        <h3 class="font-headline font-bold text-xl mb-4">Request Jadwal Mentoring</h3>
+                        <form id="mentoringForm" class="flex flex-col md:flex-row gap-4">
+                            <input type="text" id="m-topic" required placeholder="Topik Diskusi..." class="flex-[2] p-3 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
+                            <input type="datetime-local" id="m-date" required class="flex-1 p-3 bg-gray-50 border rounded-xl outline-none text-sm text-gray-500">
+                            <button type="submit" class="bg-primary text-white font-bold px-6 py-3 rounded-xl shadow-md">Ajukan</button>
+                        </form>
+                    </div>
+                    <div class="bg-white rounded-3xl p-6 border shadow-sm">
+                        <h3 class="font-headline font-bold text-xl mb-4">Jadwal Saya</h3>
+                        <div id="mentoring-list" class="space-y-3"><p class="text-sm text-gray-400">Belum ada jadwal diajukan.</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AREA BELAJAR & KUIS -->
+    <section id="learning-view" class="hidden fixed inset-0 bg-white z-[60] overflow-y-auto">
+        <nav class="p-4 border-b flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-md z-10">
+            <button onclick="closeLearningView()" class="flex items-center gap-1 text-gray-500 font-bold hover:text-red-500"><span class="material-symbols-outlined">close</span> Tutup</button>
+            <div class="w-32 h-2 bg-gray-100 rounded-full overflow-hidden"><div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width:0%"></div></div>
+            <div class="w-20"></div> <!-- Spacer for flex -->
+        </nav>
+
+        <div class="max-w-4xl mx-auto p-4 md:p-8 pb-32">
+            <!-- Materi -->
+            <div id="material-area">
+                <div id="media-container" class="rounded-[2rem] overflow-hidden mb-6 border shadow-sm bg-gray-50"></div>
+                <h2 id="part-title" class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">...</h2>
+                <div id="part-body" class="text-gray-600 text-base md:text-lg leading-relaxed prose max-w-none"></div>
+            </div>
+
+            <!-- Kuis -->
+            <div id="quiz-area" class="hidden text-center bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-inner">
+                <div id="quiz-navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
+                <h2 id="quiz-question" class="text-xl md:text-2xl font-bold mb-8 text-gray-800">...</h2>
+                <div id="quiz-options" class="grid gap-3 text-left"></div>
+                
+                <div class="flex gap-4 mt-8">
+                    <button id="btn-prev-quiz" onclick="navigateQuiz(-1)" class="flex-1 py-4 bg-white border border-gray-300 text-gray-600 rounded-xl font-bold transition hover:bg-gray-100 hidden">Sebelumnya</button>
+                    <button id="btn-next-quiz" onclick="navigateQuiz(1)" class="flex-[2] py-4 bg-primary text-white rounded-xl font-bold transition shadow-lg">Berikutnya</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Nav (Materi Only) -->
+        <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t flex gap-4 justify-center">
+            <button id="prev-part" class="px-8 py-3 border border-gray-200 text-gray-500 rounded-xl font-bold transition hover:bg-gray-50">Kembali</button>
+            <button id="next-part" class="px-10 py-3 bg-primary text-white rounded-xl font-bold shadow-lg hover:scale-105 transition">Berikutnya</button>
+        </div>
+    </section>
+
+    <!-- MODAL AUTH -->
+    <div id="auth-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-md p-8 rounded-[2rem] shadow-2xl relative">
+            <button onclick="closeAuthModal()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 text-xl font-bold">×</button>
+            <h2 id="modal-title" class="font-headline text-2xl font-bold mb-1">Masuk</h2>
+            <form id="authForm" class="space-y-4 mt-6">
+                <div id="reg-fields" class="hidden space-y-4">
+                    <input type="text" id="reg-nama" placeholder="Nama Lengkap" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
+                    <input type="tel" id="reg-nohp" placeholder="Nomor WA (Opsional)" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
+                </div>
+                <input type="email" id="auth-email" placeholder="Email" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
+                <input type="password" id="auth-pass" placeholder="Password" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
+                <button type="submit" id="btn-auth" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-2 transition hover:bg-[#00478d]">Masuk Sekarang</button>
+            </form>
+            <button onclick="toggleAuthMode()" id="toggle-text" class="w-full mt-6 text-sm font-bold text-gray-400 hover:text-primary transition">Belum punya akun? Daftar Akun Baru</button>
+        </div>
+    </div>
+
+    <script>
+        let userData = null; let allModules = []; let currentModuleData = []; let currentPartIndex = 0; let activeModuleId = ""; 
+        let currentQuizzes = []; let currentQuizIndex = 0; let earnedPoints = 0; let userAnswers = {};
+        let myUserChart = null;
+
+        window.onload = function() { 
+            loadModules(); 
+            if(localStorage.getItem('healthlearn_user')) { 
+                userData = JSON.parse(localStorage.getItem('healthlearn_user')); 
+                updateUIForUser(); 
+            } 
+        };
+
+        // --- DASHBOARD USER ---
+        function openUserDashboard() {
+            if(!userData) return openAuthModal();
+            document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('user-dashboard-view').classList.remove('hidden');
+            document.getElementById('profile-dropdown').classList.add('hidden');
+            
+            document.getElementById('ep-nama').value = userData.nama_lengkap;
+            document.getElementById('ep-nohp').value = userData.nomor_hp || '';
+            document.getElementById('ep-email').value = userData.email;
+            document.getElementById('user-dashboard-points').innerText = `${userData.total_points} Poin Total`;
+
+            const p = userData.total_points;
+            let badge = '🌱', text = 'Health Beginner';
+            if(p >= 100 && p < 300) { badge = '🥉'; text = 'Bronze Explorer'; }
+            else if(p >= 300 && p < 600) { badge = '🥈'; text = 'Silver Scholar'; }
+            else if(p >= 600) { badge = '🥇'; text = 'Gold Champion'; }
+            document.getElementById('reward-badge').innerText = badge; document.getElementById('reward-text').innerText = text;
+            loadUserChart();
+        }
+
+        function closeUserDashboard() {
+            document.getElementById('user-dashboard-view').classList.add('hidden');
+            document.getElementById('main-view').classList.remove('hidden');
+        }
+
+        function switchUserTab(tab) {
+            document.querySelectorAll('.tab-btn-user').forEach(b => b.classList.remove('active', 'border-l-4'));
+            document.getElementById('tab-' + tab).classList.add('active', 'border-l-4');
+            document.querySelectorAll('.user-tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById('content-' + tab).classList.remove('hidden');
+            if(tab === 'mentoring') loadMentoring();
+            if(tab === 'rapor') loadUserChart();
+        }
+
+        function loadUserChart() {
+            google.script.run.withSuccessHandler(res => {
+                const ctx = document.getElementById('userProgressChart').getContext('2d');
+                if(myUserChart) myUserChart.destroy();
+                if(!res.data || res.data.length === 0) return;
+                
+                let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, 'rgba(0, 90, 156, 0.6)'); gradient.addColorStop(1, 'rgba(0, 90, 156, 0.05)');
+                myUserChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: res.data.map(d => d.modules.title.substring(0,10)+'...'), datasets: [{ label: 'Skor Kuis', data: res.data.map(d => d.score), backgroundColor: gradient, borderRadius: 8 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
+                });
+            }).getUserProgressChart(userData.id);
+        }
+
+        document.getElementById('editProfilForm').onsubmit = (e) => {
+            e.preventDefault(); const btn = document.getElementById('btn-ep-save'); btn.innerText = "Menyimpan..."; btn.disabled = true;
+            const payload = { nama_lengkap: document.getElementById('ep-nama').value, nomor_hp: document.getElementById('ep-nohp').value };
+            google.script.run.withSuccessHandler(res => {
+                btn.innerText = "Update Profil"; btn.disabled = false;
+                if(res.status === 'success') {
+                    userData.nama_lengkap = payload.nama_lengkap; userData.nomor_hp = payload.nomor_hp;
+                    localStorage.setItem('healthlearn_user', JSON.stringify(userData)); updateUIForUser(); alert('Profil berhasil diperbarui!');
+                }
+            }).updateUserData(userData.id, payload);
+        };
+
+        function loadMentoring() {
+            google.script.run.withSuccessHandler(data => {
+                const list = document.getElementById('mentoring-list'); list.innerHTML = '';
+                if(data.length === 0) list.innerHTML = '<p class="text-sm text-gray-400">Belum ada jadwal.</p>';
+                data.forEach(d => list.innerHTML += `<div class="p-4 border rounded-xl bg-gray-50 flex justify-between items-center"><div class="flex-1"><p class="font-bold text-sm text-gray-800">${d.topic}</p><p class="text-xs text-gray-500">${new Date(d.schedule).toLocaleString()}</p></div><span class="text-[10px] font-black uppercase px-3 py-1 rounded-md ${d.status==='pending'?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600'}">${d.status}</span></div>`);
+            }).getMentoring(userData.id);
+        }
+        
+        document.getElementById('mentoringForm').onsubmit = (e) => {
+            e.preventDefault();
+            google.script.run.withSuccessHandler(res => { alert('Jadwal diajukan!'); document.getElementById('m-topic').value=''; loadMentoring(); }).requestMentoring({ user_id: userData.id, topic: document.getElementById('m-topic').value, schedule: document.getElementById('m-date').value });
+        };
+
+        // --- MODULE & LEARNING ---
+        function loadModules() { google.script.run.withSuccessHandler(m => { allModules = m; renderModules(m); }).getModules(); }
+        
+        function renderModules(data) {
+            const c = document.getElementById('course-container'); c.innerHTML = '';
+            if(!data || data.length===0) return c.innerHTML='<div class="col-span-full py-10 text-center font-bold text-gray-400">Belum ada modul yang diterbitkan.</div>';
+            data.forEach(m => { 
+                c.innerHTML += `<div class="bg-white rounded-[2rem] overflow-hidden border shadow-sm cursor-pointer hover:shadow-xl transition-all group flex flex-col" onclick="checkAccess('user', '${m.id}', '${m.title.replace(/'/g, "\\'")}')">
+                    <img src="${m.media_url}" class="h-44 w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div class="p-6 flex flex-col flex-grow">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-primary mb-2">${m.category}</span>
+                        <h3 class="font-bold text-lg text-gray-800 mb-2 leading-tight">${m.title}</h3>
+                        <p class="text-sm text-gray-500 line-clamp-2 mb-6 flex-grow">${m.summary}</p>
+                        <button class="w-full py-3.5 bg-secondary text-primary font-bold rounded-xl group-hover:bg-primary group-hover:text-white transition">Pelajari Modul</button>
+                    </div>
+                </div>`; 
+            });
+        }
+
+        function checkAccess(page, id, title) {
+            if(!userData) return openAuthModal();
+            if(page === 'admin') { google.script.run.withSuccessHandler(url => window.top.location.href = url + "?p=admin").getScriptUrl(); } 
+            else { 
+                activeModuleId = id; activeModuleTitle = title;
+                document.getElementById('learning-view').classList.remove('hidden'); 
+                document.getElementById('material-area').classList.remove('hidden'); 
+                document.getElementById('quiz-area').classList.add('hidden'); 
+                document.getElementById('bottom-nav').classList.remove('hidden'); 
+                document.body.style.overflow = 'hidden'; 
+                google.script.run.withSuccessHandler(res => { currentModuleData = res; currentPartIndex = 0; renderPart(); }).getModuleContents(id); 
+            }
+        }
+
+        function renderPart() {
+            if(currentModuleData.length === 0) return alert("Modul belum ada materi.");
+            const p = currentModuleData[currentPartIndex];
+            document.getElementById('progress-bar').style.width = ((currentPartIndex + 1) / currentModuleData.length * 100) + "%";
+            document.getElementById('part-title').innerText = p.title; 
+            document.getElementById('part-body').innerHTML = p.content_data;
+            
+            const mb = document.getElementById('media-container'); mb.innerHTML = '';
+            if(p.content_type === 'youtube') { 
+                mb.classList.remove('hidden'); mb.classList.add('aspect-video'); 
+                mb.innerHTML = `<iframe class="w-full h-full" src="${p.content_data}" frameborder="0" allowfullscreen></iframe>`; 
+            } 
+            else if(p.content_type === 'pdf') { 
+                mb.classList.remove('hidden', 'aspect-video'); mb.classList.add('aspect-[3/4]'); 
+                mb.innerHTML = `<iframe src="${p.content_data}" class="w-full h-full bg-white"></iframe>`; 
+            }
+            else { mb.classList.add('hidden'); }
+
+            document.getElementById('prev-part').disabled = (currentPartIndex === 0);
+            document.getElementById('prev-part').onclick = () => { currentPartIndex--; renderPart(); };
+            
+            const nextBtn = document.getElementById('next-part');
+            if(currentPartIndex === currentModuleData.length - 1) { 
+                nextBtn.innerText = "Mulai Kuis 🏆"; 
+                nextBtn.classList.replace('bg-primary', 'bg-orange-500');
+                nextBtn.onclick = startQuiz; 
+            } else { 
+                nextBtn.innerText = "Berikutnya"; 
+                nextBtn.classList.replace('bg-orange-500', 'bg-primary');
+                nextBtn.onclick = () => { currentPartIndex++; renderPart(); }; 
+            }
+            document.getElementById('learning-view').scrollTo(0,0);
+        }
+
+        // --- KUIS DINAMIS DENGAN NAVIGASI NOMOR ---
+        function startQuiz() {
+            document.getElementById('next-part').innerText = "Tunggu...";
+            google.script.run.withSuccessHandler(q => {
+                if(q.length === 0) { alert("Belum ada kuis."); return closeLearningView(); }
+                currentQuizzes = q; currentQuizIndex = 0; earnedPoints = 0; userAnswers = {};
+                document.getElementById('material-area').classList.add('hidden'); 
+                document.getElementById('bottom-nav').classList.add('hidden'); 
+                document.getElementById('quiz-area').classList.remove('hidden'); 
+                renderQuizQuestion();
+            }).getModuleQuizzes(activeModuleId);
+        }
+
+        function renderQuizQuestion() {
+            const q = currentQuizzes[currentQuizIndex];
+            document.getElementById('quiz-question').innerText = `${currentQuizIndex + 1}. ${q.question}`;
+            
+            // Navigasi Nomor Kuis
+            const navContainer = document.getElementById('quiz-navigation'); navContainer.innerHTML = '';
+            currentQuizzes.forEach((_, idx) => {
+                const isAnswered = userAnswers[idx] ? 'bg-green-100 text-green-700 border-green-300' : 'bg-white text-gray-400 border-gray-200';
+                const isActive = idx === currentQuizIndex ? 'ring-2 ring-primary border-primary bg-blue-50 text-primary' : '';
+                navContainer.innerHTML += `<button onclick="jumpToQuiz(${idx})" class="w-8 h-8 rounded-lg border font-bold text-xs flex items-center justify-center transition-all hover:bg-gray-50 ${isAnswered} ${isActive}">${idx + 1}</button>`;
+            });
+
+            // Opsi Jawaban
+            const c = document.getElementById('quiz-options'); c.innerHTML = '';
+            [{id:'A', t:q.option_a}, {id:'B', t:q.option_b}, {id:'C', t:q.option_c}, {id:'D', t:q.option_d}].forEach(o => {
+                if(o.t && o.t !== "-") {
+                    const isSelected = userAnswers[currentQuizIndex] === o.id;
+                    const bgClass = isSelected ? 'border-primary bg-blue-50' : 'border-gray-200 bg-white';
+                    const btnClass = isSelected ? 'bg-primary text-white' : 'bg-white text-gray-400';
+                    
+                    const b = document.createElement('button'); 
+                    b.className = `w-full p-4 border-2 rounded-xl text-left font-bold text-sm text-gray-600 transition flex items-center hover:bg-gray-50 ${bgClass}`;
+                    b.innerHTML = `<span class="border px-3 py-1.5 rounded-lg mr-4 font-black transition-all btn-letter ${btnClass}">${o.id}</span> <span class="leading-relaxed">${o.t}</span>`;
+                    b.onclick = () => { userAnswers[currentQuizIndex] = o.id; renderQuizQuestion(); };
+                    c.appendChild(b);
+                }
+            });
+
+            // Tombol Navigasi Bawah Kuis
+            document.getElementById('btn-prev-quiz').classList.toggle('hidden', currentQuizIndex === 0);
+            const nextBtn = document.getElementById('btn-next-quiz');
+            if (currentQuizIndex === currentQuizzes.length - 1) {
+                nextBtn.innerText = "Kumpulkan Kuis"; nextBtn.classList.replace('bg-primary', 'bg-orange-500'); nextBtn.onclick = evaluateQuiz;
+            } else {
+                nextBtn.innerText = "Berikutnya"; nextBtn.classList.replace('bg-orange-500', 'bg-primary'); nextBtn.onclick = () => navigateQuiz(1);
+            }
+        }
+
+        function navigateQuiz(dir) { currentQuizIndex += dir; renderQuizQuestion(); }
+        function jumpToQuiz(index) { currentQuizIndex = index; renderQuizQuestion(); }
+
+        function evaluateQuiz() {
+            const totalAnswered = Object.keys(userAnswers).length;
+            if (totalAnswered < currentQuizzes.length) { if (!confirm(`Anda baru menjawab ${totalAnswered} dari ${currentQuizzes.length} soal. Yakin ingin mengumpulkan?`)) return; }
+            
+            earnedPoints = 0;
+            currentQuizzes.forEach((q, idx) => { if (userAnswers[idx] === q.correct_answer) earnedPoints += (q.points_reward || 20); });
+            
+            document.getElementById('quiz-area').innerHTML = `
+                <div class="py-10">
+                    <h2 class="text-3xl font-headline font-bold mb-2 text-gray-800">Kuis Selesai! 🎉</h2>
+                    <p class="text-gray-400 mb-8 font-bold">Poin kuis yang didapatkan:</p>
+                    <div class="text-6xl font-black text-primary mb-10 drop-shadow-md">+${earnedPoints}</div>
+                    <button id="btn-save-score" onclick="saveScore()" class="w-full py-4 bg-orange-500 text-white rounded-2xl font-bold shadow-lg shadow-orange-500/30 hover:scale-105 transition">Simpan Progres</button>
+                </div>`;
+        }
+        
+        function saveScore() {
+            const btn = document.getElementById('btn-save-score'); btn.innerText = "Menyimpan ke Server..."; btn.disabled = true;
+            google.script.run.withSuccessHandler(res => { 
+                userData.total_points = res.newTotal; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
+                updateUIForUser(); alert(res.message); closeLearningView(); 
+            }).submitQuizScore(userData.id, activeModuleId, earnedPoints);
+        }
+
+        function closeLearningView() { 
+            document.getElementById('learning-view').classList.add('hidden'); 
+            document.body.style.overflow = 'auto'; 
+            document.getElementById('media-container').innerHTML = ''; 
+            document.getElementById('part-body').innerHTML = '';
+            document.getElementById('quiz-area').innerHTML = `
+                <div id="quiz-navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
+                <h2 id="quiz-question" class="text-xl md:text-2xl font-bold mb-8 text-gray-800">...</h2>
+                <div id="quiz-options" class="grid gap-3 text-left"></div>
+                <div class="flex gap-4 mt-8">
+                    <button id="btn-prev-quiz" class="flex-1 py-4 bg-white border border-gray-300 text-gray-600 rounded-xl font-bold transition hover:bg-gray-100 hidden">Sebelumnya</button>
+                    <button id="btn-next-quiz" class="flex-[2] py-4 bg-primary text-white rounded-xl font-bold transition shadow-lg">Berikutnya</button>
+                </div>`;
+        }
+
+        // --- AUTH & DOM MANIPULATION (NO RELOAD BUG FIX) ---
+        function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+        function toggleAuthMode() { 
+            const isReg = document.getElementById('reg-fields').classList.toggle('hidden'); 
+            document.getElementById('modal-title').innerText = isReg ? 'Daftar Akun Baru' : 'Masuk'; 
+            document.getElementById('btn-auth').innerText = isReg ? 'Buat Akun' : 'Masuk Sekarang'; 
+            document.getElementById('toggle-text').innerText = isReg ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar Akun Baru'; 
+        }
+
+        document.getElementById('authForm').onsubmit = (e) => {
+            e.preventDefault(); 
+            const isReg = !document.getElementById('reg-fields').classList.contains('hidden'); 
+            const btn = document.getElementById('btn-auth'); btn.innerText = "Memproses..."; btn.disabled = true;
+            
+            const data = { 
+                email: document.getElementById('auth-email').value, 
+                pass: document.getElementById('auth-pass').value, 
+                nama: document.getElementById('reg-nama') ? document.getElementById('reg-nama').value : '', 
+                nohp: document.getElementById('reg-nohp') ? document.getElementById('reg-nohp').value : '' 
+            };
+            
+            if(isReg) { 
+                google.script.run.withSuccessHandler(r => { 
+                    btn.innerText = "Daftar Akun"; btn.disabled = false;
+                    if(r.status === 'success') { alert("Pendaftaran Berhasil! Silakan Masuk."); toggleAuthMode(); } else alert(r.message); 
+                }).registerUser(data); 
+            } else { 
+                google.script.run.withSuccessHandler(r => { 
+                    btn.innerText = "Masuk Sekarang"; btn.disabled = false;
+                    if(r.status === 'success'){ 
+                        userData = r.user; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
+                        closeAuthModal(); updateUIForUser(); document.getElementById('authForm').reset();
+                    } else alert(r.message); 
+                }).loginUser(data.email, data.pass); 
+            }
+        };
+
+        function updateUIForUser() { 
+            document.getElementById('greeting-text').innerText = `Halo ${userData.nama_lengkap.split(' ')[0]}! 🌟`; 
+            document.getElementById('user-status-text').innerText = userData.nama_lengkap.split(' ')[0]; 
+            document.getElementById('user-points-text').innerText = userData.total_points + " Pts"; 
+            document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${userData.nama_lengkap}&background=005a9c&color=fff`;
+            
+            document.getElementById('btn-login-menu').classList.add('hidden');
+            document.getElementById('btn-profil-menu').classList.remove('hidden');
+            document.getElementById('btn-logout-menu').classList.remove('hidden');
+            if(userData.role === 'admin') document.getElementById('admin-dropdown-btn').classList.remove('hidden'); 
+        }
+
+        function toggleProfileMenu(e) { e.stopPropagation(); document.getElementById('profile-dropdown').classList.toggle('hidden'); }
+        
+        function logout() { 
+            if(confirm('Apakah Anda yakin ingin keluar?')) {
+                localStorage.removeItem('healthlearn_user'); userData = null;
+                document.getElementById('profile-dropdown').classList.add('hidden');
+                document.getElementById('user-status-text').innerText = 'Masuk';
+                document.getElementById('user-points-text').innerText = '0 Pts';
+                document.getElementById('user-avatar').src = 'https://ui-avatars.com/api/?name=Guest';
+                document.getElementById('greeting-text').innerText = 'Halo! Siap Belajar? 🚀';
+                
+                document.getElementById('btn-login-menu').classList.remove('hidden');
+                document.getElementById('btn-profil-menu').classList.add('hidden');
+                document.getElementById('btn-logout-menu').classList.add('hidden');
+                document.getElementById('admin-dropdown-btn').classList.add('hidden');
+                closeUserDashboard();
+            }
+        }
+        window.onclick = () => document.getElementById('profile-dropdown').classList.add('hidden');
+    </script>
+</body>
+</html>
