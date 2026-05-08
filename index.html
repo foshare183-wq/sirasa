@@ -10,7 +10,6 @@
     <title>HealthLearn - App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- MENGHUBUNGKAN SUPABASE SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet" />
@@ -60,7 +59,7 @@
     <main id="main-view" class="max-w-7xl mx-auto px-4 md:px-6 pt-28 pb-6">
         <div class="bg-gradient-to-br from-[#00478d] to-[#0073e6] rounded-[2rem] p-8 md:p-12 text-white mb-8 shadow-xl">
             <h1 id="greeting-text" class="font-headline text-2xl md:text-4xl font-bold mb-2">Halo! Siap Belajar? 🚀</h1>
-            <p class="text-blue-100 text-sm md:text-base opacity-90 max-w-xl">Pilih modul, kumpulkan poin, dan tingkatkan prestasimu di leaderboard.</p>
+            <p class="text-blue-100 text-sm md:text-base opacity-90 max-w-xl">Pilih modul materi, kumpulkan poin, dan pantau progres belajarmu.</p>
         </div>
         <div id="course-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
     </main>
@@ -85,7 +84,7 @@
                         <div>
                             <h3 class="font-headline font-bold text-xl mb-1">Status Prestasi</h3>
                             <p id="reward-text" class="text-sm text-gray-500 font-bold mb-2">Health Beginner</p>
-                            <span id="user-dashboard-points" class="bg-primary text-white text-xs font-black px-3 py-1 rounded-full">0 Poin Total</span>
+                            <span id="user-dashboard-points" class="bg-primary text-white text-xs font-black px-3 py-1 rounded-full shadow-sm">0 Poin Total</span>
                         </div>
                     </div>
                     <div class="bg-white rounded-3xl p-6 border shadow-sm">
@@ -112,7 +111,7 @@
                     <div class="bg-white rounded-3xl p-6 border shadow-sm">
                         <h3 class="font-headline font-bold text-xl mb-4">Request Jadwal Mentoring</h3>
                         <form id="mentoringForm" class="flex flex-col md:flex-row gap-4">
-                            <input type="text" id="m-topic" required placeholder="Topik Diskusi..." class="flex-[2] p-3 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
+                            <input type="text" id="m-topic" required placeholder="Topik Diskusi Konsultasi..." class="flex-[2] p-3 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
                             <input type="datetime-local" id="m-date" required class="flex-1 p-3 bg-gray-50 border rounded-xl outline-none text-sm text-gray-500">
                             <button type="submit" class="bg-primary text-white font-bold px-6 py-3 rounded-xl shadow-md">Ajukan</button>
                         </form>
@@ -129,22 +128,25 @@
     <!-- AREA BELAJAR & KUIS -->
     <section id="learning-view" class="hidden fixed inset-0 bg-white z-[60] overflow-y-auto">
         <nav class="p-4 border-b flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-md z-10">
-            <button onclick="closeLearningView()" class="flex items-center gap-1 text-gray-500 font-bold hover:text-red-500"><span class="material-symbols-outlined">close</span> Tutup</button>
+            <button onclick="closeLearningView()" class="flex items-center gap-1 text-gray-500 font-bold hover:text-red-500 transition"><span class="material-symbols-outlined">close</span> Tutup</button>
             <div class="w-32 h-2 bg-gray-100 rounded-full overflow-hidden"><div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width:0%"></div></div>
             <div class="w-20"></div>
         </nav>
 
         <div class="max-w-4xl mx-auto p-4 md:p-8 pb-32">
+            <!-- Materi -->
             <div id="material-area">
                 <div id="media-container" class="rounded-[2rem] overflow-hidden mb-6 border shadow-sm bg-gray-50"></div>
                 <h2 id="part-title" class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">...</h2>
                 <div id="part-body" class="text-gray-600 text-base md:text-lg leading-relaxed prose max-w-none"></div>
             </div>
 
+            <!-- Kuis -->
             <div id="quiz-area" class="hidden text-center bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-inner">
                 <div id="quiz-navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
                 <h2 id="quiz-question" class="text-xl md:text-2xl font-bold mb-8 text-gray-800">...</h2>
                 <div id="quiz-options" class="grid gap-3 text-left"></div>
+                
                 <div class="flex gap-4 mt-8">
                     <button id="btn-prev-quiz" onclick="navigateQuiz(-1)" class="flex-1 py-4 bg-white border border-gray-300 text-gray-600 rounded-xl font-bold transition hover:bg-gray-100 hidden">Sebelumnya</button>
                     <button id="btn-next-quiz" onclick="navigateQuiz(1)" class="flex-[2] py-4 bg-primary text-white rounded-xl font-bold transition shadow-lg">Berikutnya</button>
@@ -164,14 +166,23 @@
             <button onclick="closeAuthModal()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 text-xl font-bold">×</button>
             <h2 id="modal-title" class="font-headline text-2xl font-bold mb-1">Masuk</h2>
             <form id="authForm" class="space-y-4 mt-6">
+                <!-- Field Registrasi Tambahan (Tanggal Lahir & Jenis Kelamin) -->
                 <div id="reg-fields" class="hidden space-y-4 border-b border-gray-100 pb-4 mb-4">
                     <input type="text" id="reg-nama" placeholder="Nama Lengkap" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
                     <input type="tel" id="reg-nohp" placeholder="Nomor WA (Opsional)" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
                     <input type="date" id="reg-tgl" placeholder="Tanggal Lahir" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm text-gray-500" />
+                    <select id="reg-jk" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm text-gray-500">
+                        <option value="" disabled selected>Pilih Jenis Kelamin</option>
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                    </select>
                 </div>
+                
                 <input type="email" id="auth-email" placeholder="Email" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
                 <input type="password" id="auth-pass" placeholder="Password" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
+                
                 <button type="submit" id="btn-auth" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-2 transition hover:bg-[#00478d]">Masuk Sekarang</button>
+                
                 <button type="button" onclick="loginWithGoogle()" class="w-full bg-white border border-gray-200 text-gray-600 font-bold py-3 rounded-xl flex items-center justify-center gap-3 text-sm hover:bg-gray-50 transition">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="w-5 h-5"/> Lanjutkan dengan Google
                 </button>
@@ -183,11 +194,9 @@
     <!-- SCRIPT SUPABASE & LOGIC -->
     <script>
         // MASUKKAN KREDENSIAL SUPABASE KAMU DI SINI
-        const SUPABASE_URL = 'https://nhsrvtintqtwwongurrl.supabase.co'; // Ganti dengan Project URL
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oc3J2dGludHF0d3dvbmd1cnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MzM1MzQsImV4cCI6MjA5MzQwOTUzNH0._vADwO4JvlYfO6iJON1Rqd5_YlfnJeXfZ8hPMTMsZU0'; // Ganti dengan Anon Key
+        const SUPABASE_URL = 'https://URL_PROJECT_KAMU.supabase.co'; // GANTI INI
+        const SUPABASE_ANON_KEY = 'KODE_ANON_KEY_KAMU_YANG_PANJANG'; // GANTI INI
         
-       
-        // NAMA VARIABEL DIGANTI JADI supabaseClient AGAR TIDAK BENTROK
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let userData = null; let allModules = []; let currentModuleData = []; let currentPartIndex = 0; let activeModuleId = ""; 
@@ -220,34 +229,42 @@
 
         // --- AUTH & LOGIN ---
         async function loginWithGoogle() {
-            const { data, error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+            // Alert sementara selama Client ID belum diset di Supabase
+            alert("Fitur Login Google sedang disiapkan oleh Administrator. Silakan daftar dan masuk menggunakan Email manual untuk sementara waktu.");
+            
+            // Hapus tanda komentar pada kode di bawah ini jika Google Auth di Supabase sudah nyala
+            /*
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({ 
+                provider: 'google', 
+                options: { redirectTo: window.location.origin } 
+            });
             if (error) alert("Gagal koneksi ke Google: " + error.message);
+            */
         }
-        
-function toggleAuthMode() { 
-    const regFields = document.getElementById('reg-fields');
-    regFields.classList.toggle('hidden'); 
-    
-    // Cek apakah class 'hidden' sudah hilang (artinya sedang di mode Daftar)
-    const isReg = !regFields.classList.contains('hidden'); 
-    
-    document.getElementById('reg-tgl').required = isReg;
-    document.getElementById('modal-title').innerText = isReg ? 'Daftar Akun Baru' : 'Masuk'; 
-    document.getElementById('btn-auth').innerText = isReg ? 'Buat Akun' : 'Masuk Sekarang'; 
-    document.getElementById('toggle-text').innerText = isReg ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar Akun Baru'; 
-}
+
+        function toggleAuthMode() { 
+            const regFields = document.getElementById('reg-fields');
+            regFields.classList.toggle('hidden'); 
+            
+            const isReg = !regFields.classList.contains('hidden'); 
+            
+            document.getElementById('reg-tgl').required = isReg;
+            document.getElementById('modal-title').innerText = isReg ? 'Daftar Akun Baru' : 'Masuk'; 
+            document.getElementById('btn-auth').innerText = isReg ? 'Buat Akun' : 'Masuk Sekarang'; 
+            document.getElementById('toggle-text').innerText = isReg ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar Akun Baru'; 
+        }
+
         function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
+        
         function closeAuthModal() { 
-    document.getElementById('auth-modal').classList.add('hidden'); 
-    
-    // Reset form kembali ke mode Login setiap kali modal ditutup
-    document.getElementById('reg-fields').classList.add('hidden');
-    document.getElementById('reg-tgl').required = false;
-    document.getElementById('modal-title').innerText = 'Masuk'; 
-    document.getElementById('btn-auth').innerText = 'Masuk Sekarang'; 
-    document.getElementById('toggle-text').innerText = 'Belum punya akun? Daftar Akun Baru';
-    document.getElementById('authForm').reset();
-}
+            document.getElementById('auth-modal').classList.add('hidden'); 
+            document.getElementById('reg-fields').classList.add('hidden');
+            document.getElementById('reg-tgl').required = false;
+            document.getElementById('modal-title').innerText = 'Masuk'; 
+            document.getElementById('btn-auth').innerText = 'Masuk Sekarang'; 
+            document.getElementById('toggle-text').innerText = 'Belum punya akun? Daftar Akun Baru';
+            document.getElementById('authForm').reset();
+        }
 
         document.getElementById('authForm').onsubmit = async (e) => {
             e.preventDefault(); 
@@ -261,13 +278,17 @@ function toggleAuthMode() {
                 const nama = document.getElementById('reg-nama').value;
                 const nohp = document.getElementById('reg-nohp').value;
                 const tgl = document.getElementById('reg-tgl').value;
+                const jk = document.getElementById('reg-jk').value;
                 
+                if(!jk) { alert("Pilih jenis kelamin terlebih dahulu."); btn.disabled = false; btn.innerText = "Buat Akun"; return; }
+
                 const { data: check } = await supabaseClient.from('users').select('id').eq('email', email);
-                if(check.length > 0) {
-                    alert('Email sudah terdaftar.'); btn.innerText = "Buat Akun"; btn.disabled = false; return;
-                }
+                if(check.length > 0) { alert('Email sudah terdaftar.'); btn.innerText = "Buat Akun"; btn.disabled = false; return; }
                 
-                const { error } = await supabaseClient.from('users').insert([{ nama_lengkap: nama, email: email, nomor_hp: nohp, tanggal_lahir: tgl, password_hash: pass, role: 'user', total_points: 0 }]);
+                const { error } = await supabaseClient.from('users').insert([{ 
+                    nama_lengkap: nama, email: email, nomor_hp: nohp, tanggal_lahir: tgl, jenis_kelamin: jk, password_hash: pass, role: 'user', total_points: 0 
+                }]);
+                
                 btn.disabled = false;
                 if(!error) { alert("Pendaftaran Berhasil! Silakan Masuk."); toggleAuthMode(); } else { alert("Gagal daftar: " + error.message); btn.innerText = "Buat Akun"; }
             } else { 
@@ -276,7 +297,6 @@ function toggleAuthMode() {
                 if(data && data.length > 0){ 
                     userData = data[0]; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
                     closeAuthModal(); updateUIForUser(); document.getElementById('authForm').reset();
-                    supabaseClient.from('user_tracking').insert([{ user_id: userData.id, activity_type: 'login', description: 'User login.' }]).then();
                 } else { alert("Email atau Password salah."); btn.innerText = "Masuk Sekarang"; } 
             }
         };
@@ -294,6 +314,7 @@ function toggleAuthMode() {
         }
 
         function toggleProfileMenu(e) { e.stopPropagation(); document.getElementById('profile-dropdown').classList.toggle('hidden'); }
+        
         async function logout() { 
             if(confirm('Apakah Anda yakin ingin keluar?')) {
                 await supabaseClient.auth.signOut();
@@ -355,7 +376,7 @@ function toggleAuthMode() {
             gradient.addColorStop(0, 'rgba(0, 90, 156, 0.6)'); gradient.addColorStop(1, 'rgba(0, 90, 156, 0.05)');
             myUserChart = new Chart(ctx, {
                 type: 'bar',
-                data: { labels: data.map(d => d.modules.title.substring(0,10)+'...'), datasets: [{ label: 'Skor Kuis', data: data.map(d => d.score), backgroundColor: gradient, borderRadius: 8 }] },
+                data: { labels: data.map(d => d.modules ? d.modules.title.substring(0,10)+'...' : 'Modul Terhapus'), datasets: [{ label: 'Skor Kuis', data: data.map(d => d.score), backgroundColor: gradient, borderRadius: 8 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
             });
         }
@@ -386,7 +407,7 @@ function toggleAuthMode() {
 
         // --- MODULE & LEARNING ---
         async function loadModules() { 
-            const { data, error } = await supabaseClient.from('modules').select('*');
+            const { data, error } = await supabaseClient.from('modules').select('*').order('created_at', { ascending: false });
             if(data) { allModules = data; renderModules(data); }
         }
         
@@ -395,7 +416,7 @@ function toggleAuthMode() {
             if(!data || data.length===0) return c.innerHTML='<div class="col-span-full py-10 text-center font-bold text-gray-400">Belum ada modul yang diterbitkan.</div>';
             data.forEach(m => { 
                 c.innerHTML += `<div class="bg-white rounded-[2rem] overflow-hidden border shadow-sm cursor-pointer hover:shadow-xl transition-all group flex flex-col" onclick="checkAccess('user', '${m.id}', '${m.title.replace(/'/g, "\\'")}')">
-                    <img src="${m.media_url}" class="h-44 w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src="${m.media_url}" onerror="this.src='https://images.unsplash.com/photo-1505751172107'" class="h-44 w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div class="p-6 flex flex-col flex-grow">
                         <span class="text-[10px] font-black uppercase tracking-widest text-primary mb-2">${m.category}</span>
                         <h3 class="font-bold text-lg text-gray-800 mb-2 leading-tight">${m.title}</h3>
@@ -459,7 +480,7 @@ function toggleAuthMode() {
         // --- KUIS DINAMIS ---
         async function startQuiz() {
             document.getElementById('next-part').innerText = "Tunggu...";
-            const { data } = await supabaseClient.from('quizzes').select('*').eq('module_id', activeModuleId);
+            const { data } = await supabaseClient.from('quizzes').select('*').eq('module_id', activeModuleId).order('created_at', { ascending: true });
             
             if(!data || data.length === 0) { alert("Belum ada kuis."); return closeLearningView(); }
             currentQuizzes = data; currentQuizIndex = 0; earnedPoints = 0; userAnswers = {};
@@ -545,8 +566,6 @@ function toggleAuthMode() {
                 userData.total_points = finalTotal;
                 alert('Poin tersimpan!');
             }
-            
-            supabaseClient.from('user_tracking').insert([{ user_id: userData.id, activity_type: 'kuis', description: `Selesai kuis modul: ${activeModuleTitle} (${earnedPoints} poin)` }]).then();
             
             localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
             updateUIForUser(); closeLearningView(); 
