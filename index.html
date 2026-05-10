@@ -11,8 +11,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- PANGGIL FILE CONFIG DI SINI -->
     <script src="config.js"></script>
-
     
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -20,12 +21,12 @@
     <style>
         .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
         .hide-scroll::-webkit-scrollbar { display: none; }
-        .tab-btn-user.active { background-color: #eff6ff; color: #005a9c; border-left: 4px solid #005a9c; font-weight: bold; }
+        .tab-btn-desktop.active { background-color: #eff6ff; color: #005a9c; border-left: 4px solid #005a9c; font-weight: bold; }
+        .tab-btn-mobile.active { color: #005a9c; }
     </style>
 </head>
 <body class="bg-secondary font-body text-gray-800 min-h-screen pb-20 md:pb-0">
 
-    <!-- TOP NAVBAR -->
     <nav class="glass-nav fixed top-0 w-full z-40 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-2 cursor-pointer" onclick="closeUserDashboard()">
             <div class="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-md">H</div>
@@ -57,29 +58,35 @@
         </div>
     </nav>
 
-    <!-- MAIN CONTENT (BERANDA) -->
     <main id="main-view" class="max-w-7xl mx-auto px-4 md:px-6 pt-28 pb-6">
         <div class="bg-gradient-to-br from-[#00478d] to-[#0073e6] rounded-[2rem] p-8 md:p-12 text-white mb-8 shadow-xl">
             <h1 id="greeting-text" class="font-headline text-2xl md:text-4xl font-bold mb-2">Halo! Siap Belajar? 🚀</h1>
-            <p class="text-blue-100 text-sm md:text-base opacity-90 max-w-xl">Pilih modul materi, kumpulkan poin, dan pantau progres belajarmu.</p>
+            <p class="text-blue-100 text-sm md:text-base opacity-90 max-w-xl">Pilih modul, kumpulkan poin, dan tingkatkan prestasimu di leaderboard.</p>
         </div>
         <div id="course-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
     </main>
 
-    <!-- DASHBOARD USER -->
-    <section id="user-dashboard-view" class="hidden fixed inset-0 bg-secondary z-50 overflow-y-auto pt-24 pb-20 md:pb-6">
+    <div id="main-mobile-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 pb-6 z-40 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+        <button onclick="closeUserDashboard()" class="flex flex-col items-center gap-1 text-primary p-2 flex-1 transition">
+            <span class="material-symbols-outlined text-2xl">menu_book</span><span class="text-[10px] font-bold">Materi</span>
+        </button>
+        <button onclick="openUserDashboard()" class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary p-2 flex-1 transition">
+            <span class="material-symbols-outlined text-2xl">person</span><span class="text-[10px] font-bold">Profil</span>
+        </button>
+    </div>
+
+    <section id="user-dashboard-view" class="hidden fixed inset-0 bg-secondary z-50 overflow-y-auto pt-24 pb-24 md:pb-6">
         <div class="max-w-6xl mx-auto px-4 md:px-6 flex flex-col md:flex-row gap-6">
-            <div class="w-full md:w-1/4">
-                <div class="bg-white rounded-3xl p-4 border shadow-sm flex flex-row md:flex-col gap-2 overflow-x-auto hide-scroll">
-                    <button onclick="switchUserTab('rapor')" id="tab-rapor" class="tab-btn-user active flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl whitespace-nowrap transition"><span class="material-symbols-outlined">emoji_events</span> Rapor & Reward</button>
-                    <button onclick="switchUserTab('profil')" id="tab-profil" class="tab-btn-user flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl whitespace-nowrap transition"><span class="material-symbols-outlined">manage_accounts</span> Edit Profil</button>
-                    <button onclick="switchUserTab('mentoring')" id="tab-mentoring" class="tab-btn-user flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl whitespace-nowrap transition"><span class="material-symbols-outlined">support_agent</span> Mentoring</button>
-                    <button onclick="closeUserDashboard()" class="flex items-center gap-3 px-4 py-3 text-sm text-red-500 font-bold rounded-xl md:mt-4 whitespace-nowrap"><span class="material-symbols-outlined">arrow_back</span> Kembali</button>
+            <div class="hidden md:block w-full md:w-1/4">
+                <div class="bg-white rounded-3xl p-4 border shadow-sm flex flex-col gap-2">
+                    <button onclick="switchUserTab('rapor')" id="tab-rapor-desktop" class="tab-btn-desktop active flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl transition"><span class="material-symbols-outlined">emoji_events</span> Rapor & Reward</button>
+                    <button onclick="switchUserTab('profil')" id="tab-profil-desktop" class="tab-btn-desktop flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl transition"><span class="material-symbols-outlined">manage_accounts</span> Edit Profil</button>
+                    <button onclick="switchUserTab('mentoring')" id="tab-mentoring-desktop" class="tab-btn-desktop mentoring-tab-btn flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl transition hidden"><span class="material-symbols-outlined">support_agent</span> Mentoring</button>
+                    <button onclick="closeUserDashboard()" class="flex items-center gap-3 px-4 py-3 text-sm text-red-500 font-bold rounded-xl mt-4"><span class="material-symbols-outlined">arrow_back</span> Kembali</button>
                 </div>
             </div>
 
             <div class="w-full md:w-3/4">
-                <!-- Rapor -->
                 <div id="content-rapor" class="user-tab-content space-y-6">
                     <div class="bg-white rounded-3xl p-6 border shadow-sm flex items-center gap-6">
                         <div id="reward-badge" class="w-20 h-20 bg-blue-50 text-4xl flex items-center justify-center rounded-full shadow-inner border border-blue-100">🌱</div>
@@ -95,7 +102,6 @@
                     </div>
                 </div>
 
-                <!-- Profil -->
                 <div id="content-profil" class="user-tab-content hidden">
                     <div class="bg-white rounded-3xl p-6 border shadow-sm">
                         <h3 class="font-headline font-bold text-xl mb-6">Informasi Akun</h3>
@@ -108,42 +114,56 @@
                     </div>
                 </div>
 
-                <!-- Mentoring -->
                 <div id="content-mentoring" class="user-tab-content hidden space-y-6">
                     <div class="bg-white rounded-3xl p-6 border shadow-sm">
                         <h3 class="font-headline font-bold text-xl mb-4">Request Jadwal Mentoring</h3>
-                        <form id="mentoringForm" class="flex flex-col md:flex-row gap-4">
-                            <input type="text" id="m-topic" required placeholder="Topik Diskusi Konsultasi..." class="flex-[2] p-3 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
-                            <input type="datetime-local" id="m-date" required class="flex-1 p-3 bg-gray-50 border rounded-xl outline-none text-sm text-gray-500">
-                            <button type="submit" class="bg-primary text-white font-bold px-6 py-3 rounded-xl shadow-md">Ajukan</button>
+                        <form id="mentoringForm" class="flex flex-col gap-4">
+                            <select id="m-module" required class="p-3 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
+                                <option value="" disabled selected>Pilih Modul yang Ingin Didiskusikan...</option>
+                            </select>
+                            <input type="text" id="m-topic" required placeholder="Topik / Pertanyaan Spesifik..." class="p-3 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
+                            <input type="datetime-local" id="m-date" required class="p-3 bg-gray-50 border rounded-xl outline-none text-sm text-gray-500">
+                            <button type="submit" class="bg-primary text-white font-bold px-6 py-3 rounded-xl shadow-md">Ajukan Mentoring</button>
                         </form>
                     </div>
                     <div class="bg-white rounded-3xl p-6 border shadow-sm">
-                        <h3 class="font-headline font-bold text-xl mb-4">Jadwal Saya</h3>
+                        <h3 class="font-headline font-bold text-xl mb-4">Jadwal Saya & Chat</h3>
                         <div id="mentoring-list" class="space-y-3"><p class="text-sm text-gray-400">Belum ada jadwal diajukan.</p></div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 pb-6 z-[70] rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+            <button onclick="closeUserDashboard()" class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary p-2 flex-1 transition">
+                <span class="material-symbols-outlined text-2xl">arrow_back</span><span class="text-[10px] font-bold">Materi</span>
+            </button>
+            <button onclick="switchUserTab('rapor')" id="tab-rapor-mobile" class="tab-btn-mobile active flex flex-col items-center gap-1 text-gray-400 hover:text-primary p-2 flex-1 transition">
+                <span class="material-symbols-outlined text-2xl">emoji_events</span><span class="text-[10px] font-bold">Rapor</span>
+            </button>
+            <button onclick="switchUserTab('profil')" id="tab-profil-mobile" class="tab-btn-mobile flex flex-col items-center gap-1 text-gray-400 hover:text-primary p-2 flex-1 transition">
+                <span class="material-symbols-outlined text-2xl">manage_accounts</span><span class="text-[10px] font-bold">Profil</span>
+            </button>
+            <button onclick="switchUserTab('mentoring')" id="tab-mentoring-mobile" class="tab-btn-mobile mentoring-tab-btn flex flex-col items-center gap-1 text-gray-400 hover:text-primary p-2 flex-1 transition hidden">
+                <span class="material-symbols-outlined text-2xl">support_agent</span><span class="text-[10px] font-bold">Mentor</span>
+            </button>
+        </div>
     </section>
 
-    <!-- AREA BELAJAR & KUIS -->
     <section id="learning-view" class="hidden fixed inset-0 bg-white z-[60] overflow-y-auto">
         <nav class="p-4 border-b flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-md z-10">
             <button onclick="closeLearningView()" class="flex items-center gap-1 text-gray-500 font-bold hover:text-red-500 transition"><span class="material-symbols-outlined">close</span> Tutup</button>
             <div class="w-32 h-2 bg-gray-100 rounded-full overflow-hidden"><div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width:0%"></div></div>
-            <div class="w-20"></div>
+            <div class="w-20 flex justify-end"><div id="quiz-score-display" class="font-bold text-primary bg-blue-50 px-3 py-1 rounded-full text-xs hidden">0 Pts</div></div>
         </nav>
 
         <div class="max-w-4xl mx-auto p-4 md:p-8 pb-32">
-            <!-- Materi -->
             <div id="material-area">
                 <div id="media-container" class="rounded-[2rem] overflow-hidden mb-6 border shadow-sm bg-gray-50"></div>
                 <h2 id="part-title" class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">...</h2>
                 <div id="part-body" class="text-gray-600 text-base md:text-lg leading-relaxed prose max-w-none"></div>
             </div>
 
-            <!-- Kuis -->
             <div id="quiz-area" class="hidden text-center bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-inner">
                 <div id="quiz-navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
                 <h2 id="quiz-question" class="text-xl md:text-2xl font-bold mb-8 text-gray-800">...</h2>
@@ -168,7 +188,6 @@
             <button onclick="closeAuthModal()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 text-xl font-bold">×</button>
             <h2 id="modal-title" class="font-headline text-2xl font-bold mb-1">Masuk</h2>
             <form id="authForm" class="space-y-4 mt-6">
-                <!-- Field Registrasi Tambahan (Tanggal Lahir & Jenis Kelamin) -->
                 <div id="reg-fields" class="hidden space-y-4 border-b border-gray-100 pb-4 mb-4">
                     <input type="text" id="reg-nama" placeholder="Nama Lengkap" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
                     <input type="tel" id="reg-nohp" placeholder="Nomor WA (Opsional)" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
@@ -193,18 +212,28 @@
         </div>
     </div>
 
-    <!-- SCRIPT SUPABASE & LOGIC -->
-    <script>
-        // MASUKKAN KREDENSIAL SUPABASE KAMU DI SINI
-    
-        
-        
+    <!-- MODAL CHAT MENTORING -->
+    <div id="chat-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl relative flex flex-col h-[80vh]">
+            <div class="p-6 border-b flex justify-between items-center bg-gray-50 rounded-t-[2rem]">
+                <h2 class="font-headline font-bold text-xl text-primary flex items-center gap-2"><span class="material-symbols-outlined">forum</span> Ruang Diskusi</h2>
+                <button onclick="closeChat()" class="text-gray-400 hover:text-red-500 font-bold text-xl transition">×</button>
+            </div>
+            <div id="chat-box" class="flex-1 p-6 overflow-y-auto bg-gray-50/50 space-y-4 flex flex-col"></div>
+            <form id="chatForm" class="p-4 border-t bg-white rounded-b-[2rem] flex gap-2">
+                <input type="hidden" id="active-chat-id">
+                <input type="text" id="chat-msg" required placeholder="Ketik pesan..." autocomplete="off" class="flex-1 p-3 bg-gray-100 border rounded-xl outline-none focus:border-primary text-sm">
+                <button type="submit" class="bg-primary text-white px-4 py-3 rounded-xl hover:bg-blue-800 transition flex items-center justify-center"><span class="material-symbols-outlined">send</span></button>
+            </form>
+        </div>
+    </div>
 
+    <!-- SCRIPT & LOGIC -->
+    <script>
         let userData = null; let allModules = []; let currentModuleData = []; let currentPartIndex = 0; let activeModuleId = ""; 
         let currentQuizzes = []; let currentQuizIndex = 0; let earnedPoints = 0; let userAnswers = {};
-        let myUserChart = null;
+        let myUserChart = null; let chatInterval = null;
 
-        // INIT & CEK LOGIN GOOGLE
         window.onload = async function() { 
             const { data: { session } } = await supabaseClient.auth.getSession();
             if(session) {
@@ -221,32 +250,37 @@
                     localStorage.setItem('healthlearn_user', JSON.stringify(userData));
                 }
             } else if(localStorage.getItem('healthlearn_user')) { 
-                userData = JSON.parse(localStorage.getItem('healthlearn_user')); 
+                const localData = JSON.parse(localStorage.getItem('healthlearn_user')); 
+                const { data: freshData } = await supabaseClient.from('users').select('*').eq('id', localData.id);
+                if(freshData && freshData.length > 0) {
+                    userData = freshData[0];
+                    localStorage.setItem('healthlearn_user', JSON.stringify(userData));
+                }
             } 
             
             if(userData) updateUIForUser();
             loadModules(); 
+            checkMentorStatus();
         };
 
-        // --- AUTH & LOGIN ---
+        async function checkMentorStatus() {
+            const { data } = await supabaseClient.from('users').select('id').eq('role', 'admin').eq('mentor_active', true);
+            const mentorTabs = document.querySelectorAll('.mentoring-tab-btn');
+            if(data && data.length > 0) {
+                mentorTabs.forEach(t => t.classList.remove('hidden'));
+            } else {
+                mentorTabs.forEach(t => t.classList.add('hidden'));
+                if(!document.getElementById('content-mentoring').classList.contains('hidden')) { switchUserTab('rapor'); }
+            }
+        }
+
         async function loginWithGoogle() {
-            // Alert sementara selama Client ID belum diset di Supabase
-            alert("Fitur Login Google sedang disiapkan oleh Administrator. Silakan daftar dan masuk menggunakan Email manual untuk sementara waktu.");
-            
-            // Hapus tanda komentar pada kode di bawah ini jika Google Auth di Supabase sudah nyala
-            /*
-            const { data, error } = await supabaseClient.auth.signInWithOAuth({ 
-                provider: 'google', 
-                options: { redirectTo: window.location.origin } 
-            });
-            if (error) alert("Gagal koneksi ke Google: " + error.message);
-            */
+            alert("Fitur Login Google sedang disiapkan oleh Administrator. Silakan daftar dan masuk menggunakan Email manual.");
         }
 
         function toggleAuthMode() { 
             const regFields = document.getElementById('reg-fields');
             regFields.classList.toggle('hidden'); 
-            
             const isReg = !regFields.classList.contains('hidden'); 
             
             document.getElementById('reg-tgl').required = isReg;
@@ -335,17 +369,21 @@
         }
         window.onclick = () => document.getElementById('profile-dropdown').classList.add('hidden');
 
-        // --- DASHBOARD USER ---
-        function openUserDashboard() {
+        async function openUserDashboard() {
             if(!userData) return openAuthModal();
             document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('main-mobile-nav').classList.add('hidden');
             document.getElementById('user-dashboard-view').classList.remove('hidden');
             document.getElementById('profile-dropdown').classList.add('hidden');
             
+            const { data: freshData } = await supabaseClient.from('users').select('total_points').eq('id', userData.id);
+            if(freshData && freshData.length > 0) userData.total_points = freshData[0].total_points;
+
             document.getElementById('ep-nama').value = userData.nama_lengkap;
             document.getElementById('ep-nohp').value = userData.nomor_hp || '';
             document.getElementById('ep-email').value = userData.email;
             document.getElementById('user-dashboard-points').innerText = `${userData.total_points} Poin Total`;
+            document.getElementById('user-points-text').innerText = userData.total_points + " Pts";
 
             const p = userData.total_points;
             let badge = '🌱', text = 'Health Beginner';
@@ -353,18 +391,32 @@
             else if(p >= 300 && p < 600) { badge = '🥈'; text = 'Silver Scholar'; }
             else if(p >= 600) { badge = '🥇'; text = 'Gold Champion'; }
             document.getElementById('reward-badge').innerText = badge; document.getElementById('reward-text').innerText = text;
+            
             loadUserChart();
         }
 
-        function closeUserDashboard() { document.getElementById('user-dashboard-view').classList.add('hidden'); document.getElementById('main-view').classList.remove('hidden'); }
+        function closeUserDashboard() { 
+            document.getElementById('user-dashboard-view').classList.add('hidden'); 
+            document.getElementById('main-view').classList.remove('hidden'); 
+            document.getElementById('main-mobile-nav').classList.remove('hidden');
+        }
 
         function switchUserTab(tab) {
-            document.querySelectorAll('.tab-btn-user').forEach(b => b.classList.remove('active', 'border-l-4'));
-            document.getElementById('tab-' + tab).classList.add('active', 'border-l-4');
+            document.querySelectorAll('.tab-btn-desktop').forEach(b => b.classList.remove('active', 'border-l-4'));
+            document.querySelectorAll('.tab-btn-mobile').forEach(b => b.classList.remove('active', 'text-primary'));
+            const desktopTab = document.getElementById('tab-' + tab + '-desktop'); if(desktopTab) desktopTab.classList.add('active', 'border-l-4');
+            const mobileTab = document.getElementById('tab-' + tab + '-mobile'); if(mobileTab) mobileTab.classList.add('active', 'text-primary');
+
             document.querySelectorAll('.user-tab-content').forEach(c => c.classList.add('hidden'));
             document.getElementById('content-' + tab).classList.remove('hidden');
-            if(tab === 'mentoring') loadMentoring();
+            
             if(tab === 'rapor') loadUserChart();
+            if(tab === 'mentoring') {
+                loadMentoring();
+                const sel = document.getElementById('m-module');
+                sel.innerHTML = '<option value="" disabled selected>Pilih Modul yang Ingin Didiskusikan...</option>';
+                allModules.forEach(m => sel.innerHTML += `<option value="${m.title}">${m.title}</option>`);
+            }
         }
 
         async function loadUserChart() {
@@ -377,7 +429,7 @@
             gradient.addColorStop(0, 'rgba(0, 90, 156, 0.6)'); gradient.addColorStop(1, 'rgba(0, 90, 156, 0.05)');
             myUserChart = new Chart(ctx, {
                 type: 'bar',
-                data: { labels: data.map(d => d.modules ? d.modules.title.substring(0,10)+'...' : 'Modul Terhapus'), datasets: [{ label: 'Skor Kuis', data: data.map(d => d.score), backgroundColor: gradient, borderRadius: 8 }] },
+                data: { labels: data.map(d => d.modules ? d.modules.title.substring(0,10)+'...' : 'Terhapus'), datasets: [{ label: 'Skor Kuis', data: data.map(d => d.score), backgroundColor: gradient, borderRadius: 8 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
             });
         }
@@ -397,13 +449,60 @@
             const { data } = await supabaseClient.from('mentoring').select('*').eq('user_id', userData.id).order('schedule', { ascending: true });
             const list = document.getElementById('mentoring-list'); list.innerHTML = '';
             if(!data || data.length === 0) { list.innerHTML = '<p class="text-sm text-gray-400">Belum ada jadwal diajukan.</p>'; return; }
-            data.forEach(d => list.innerHTML += `<div class="p-4 border rounded-xl bg-gray-50 flex justify-between items-center"><div class="flex-1"><p class="font-bold text-sm text-gray-800">${d.topic}</p><p class="text-xs text-gray-500">${new Date(d.schedule).toLocaleString()}</p></div><span class="text-[10px] font-black uppercase px-3 py-1 rounded-md ${d.status==='pending'?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600'}">${d.status}</span></div>`);
+            data.forEach(d => list.innerHTML += `
+                <div class="p-4 border rounded-xl bg-gray-50 flex justify-between items-center gap-4">
+                    <div class="flex-1">
+                        <span class="text-[10px] font-black uppercase text-primary bg-blue-100 px-2 py-0.5 rounded">${d.module_title || 'Umum'}</span>
+                        <p class="font-bold text-sm text-gray-800 mt-1">${d.topic}</p>
+                        <p class="text-xs text-gray-500">${new Date(d.schedule).toLocaleString()}</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                        <span class="text-[10px] font-black uppercase px-3 py-1 rounded-md ${d.status==='pending'?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600'}">${d.status}</span>
+                        <button onclick="openChat('${d.id}')" class="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-800 transition flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">forum</span> Chat</button>
+                    </div>
+                </div>`);
         }
         
         document.getElementById('mentoringForm').onsubmit = async (e) => {
             e.preventDefault();
-            const { error } = await supabaseClient.from('mentoring').insert([{ user_id: userData.id, topic: document.getElementById('m-topic').value, schedule: document.getElementById('m-date').value }]);
-            if(!error) { alert('Jadwal diajukan!'); document.getElementById('m-topic').value=''; loadMentoring(); }
+            const modTitle = document.getElementById('m-module').value;
+            const { error } = await supabaseClient.from('mentoring').insert([{ user_id: userData.id, module_title: modTitle, topic: document.getElementById('m-topic').value, schedule: document.getElementById('m-date').value }]);
+            if(!error) { alert('Jadwal diajukan!'); document.getElementById('mentoringForm').reset(); loadMentoring(); }
+        };
+
+        // --- SISTEM CHAT MENTORING ---
+        function openChat(mentoringId) {
+            document.getElementById('chat-modal').classList.remove('hidden');
+            document.getElementById('active-chat-id').value = mentoringId;
+            loadChat(mentoringId);
+            chatInterval = setInterval(() => loadChat(mentoringId), 3000);
+        }
+        function closeChat() { document.getElementById('chat-modal').classList.add('hidden'); clearInterval(chatInterval); }
+        
+        async function loadChat(mentoringId) {
+            const { data } = await supabaseClient.from('mentoring_chats').select('*').eq('mentoring_id', mentoringId).order('created_at', { ascending: true });
+            const box = document.getElementById('chat-box');
+            const atBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 50; 
+            box.innerHTML = '';
+            if(!data || data.length === 0) { box.innerHTML = '<p class="text-center text-gray-400 text-sm mt-10">Mulai percakapan...</p>'; return; }
+            
+            data.forEach(c => {
+                const isMe = c.sender_id === userData.id;
+                box.innerHTML += `
+                    <div class="max-w-[80%] p-3 rounded-2xl text-sm ${isMe ? 'bg-primary text-white self-end rounded-br-sm' : 'bg-white border text-gray-800 self-start rounded-bl-sm'} shadow-sm">
+                        <p class="font-bold text-[10px] opacity-70 mb-1">${c.sender_name}</p>
+                        <p>${c.message}</p>
+                    </div>`;
+            });
+            if(atBottom) box.scrollTop = box.scrollHeight;
+        }
+
+        document.getElementById('chatForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const msgInput = document.getElementById('chat-msg'); const msg = msgInput.value; const mentoringId = document.getElementById('active-chat-id').value;
+            msgInput.value = '';
+            await supabaseClient.from('mentoring_chats').insert([{ mentoring_id: mentoringId, sender_id: userData.id, sender_name: userData.nama_lengkap, message: msg }]);
+            loadChat(mentoringId);
         };
 
         // --- MODULE & LEARNING ---
@@ -437,6 +536,7 @@
                 document.getElementById('material-area').classList.remove('hidden'); 
                 document.getElementById('quiz-area').classList.add('hidden'); 
                 document.getElementById('bottom-nav').classList.remove('hidden'); 
+                document.getElementById('main-mobile-nav').classList.add('hidden');
                 document.body.style.overflow = 'hidden'; 
                 
                 const { data } = await supabaseClient.from('module_contents').select('*').eq('module_id', id).order('order_index', { ascending: true });
@@ -577,6 +677,7 @@
             document.body.style.overflow = 'auto'; 
             document.getElementById('media-container').innerHTML = ''; 
             document.getElementById('part-body').innerHTML = '';
+            document.getElementById('main-mobile-nav').classList.remove('hidden');
             document.getElementById('quiz-area').innerHTML = `
                 <div id="quiz-navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
                 <h2 id="quiz-question" class="text-xl md:text-2xl font-bold mb-8 text-gray-800">...</h2>
