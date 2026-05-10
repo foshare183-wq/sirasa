@@ -8,7 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-      <script src="config.js"></script>
+    
+    <!-- PANGGIL FILE CONFIG DI SINI -->
+    <script src="config.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -21,13 +23,10 @@
 </head>
 <body class="bg-secondary font-body text-gray-800 min-h-screen">
 
-    <!-- ================= LOGIN ADMIN VIEW ================= -->
     <div id="login-view" class="min-h-screen flex items-center justify-center p-6">
         <div class="bg-white max-w-md w-full p-8 rounded-[2.5rem] shadow-2xl text-center border border-gray-100 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-primary"></div>
-            <div class="w-16 h-16 bg-blue-50 text-primary rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <span class="material-symbols-outlined text-3xl">admin_panel_settings</span>
-            </div>
+            <div class="w-16 h-16 bg-blue-50 text-primary rounded-2xl flex items-center justify-center mx-auto mb-6"><span class="material-symbols-outlined text-3xl">admin_panel_settings</span></div>
             <h2 class="font-headline text-2xl font-bold mb-2 text-gray-800">Portal Administrator</h2>
             <p class="text-sm text-gray-500 mb-8">Silakan masuk menggunakan akun khusus Admin.</p>
             
@@ -39,12 +38,9 @@
         </div>
     </div>
 
-    <!-- ================= DASHBOARD VIEW ================= -->
     <div id="dashboard-view" class="hidden">
         <nav class="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
-            <h1 class="font-headline font-bold text-xl text-primary flex items-center gap-2">
-                <span class="material-symbols-outlined">dashboard</span> Control Center
-            </h1>
+            <h1 class="font-headline font-bold text-xl text-primary flex items-center gap-2"><span class="material-symbols-outlined">dashboard</span> Control Center</h1>
             <button onclick="logoutAdmin()" class="text-red-500 font-bold bg-red-50 px-5 py-2.5 rounded-full text-sm hover:bg-red-500 hover:text-white transition">Keluar Sesi</button>
         </nav>
         
@@ -56,37 +52,25 @@
                 <button onclick="switchTab('mentoring')" id="tab-mentoring" class="tab-btn px-4 py-3 text-gray-400 font-bold whitespace-nowrap transition">Live Mentoring</button>
             </div>
 
-            <!-- Tab User -->
             <section id="tab-users-content" class="tab-content">
                 <div class="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-gray-100">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
-                            <thead class="bg-gray-50 text-xs font-bold uppercase text-gray-400 tracking-wider">
-                                <tr class="border-b border-gray-100">
-                                    <th class="p-6">Nama Lengkap</th>
-                                    <th class="p-6">Email Akses</th>
-                                    <th class="p-6 text-center">Total Poin</th>
-                                    <th class="p-6 text-center">Aksi Server</th>
-                                </tr>
-                            </thead>
+                            <thead class="bg-gray-50 text-xs font-bold uppercase text-gray-400 tracking-wider"><tr class="border-b border-gray-100"><th class="p-6">Nama Lengkap</th><th class="p-6">Email Akses</th><th class="p-6 text-center">Total Poin</th><th class="p-6 text-center">Aksi Server</th></tr></thead>
                             <tbody id="user-table" class="divide-y divide-gray-50 whitespace-nowrap"></tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
-            <!-- Tab Module -->
             <section id="tab-modules-content" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-headline font-bold text-xl text-gray-800">Daftar Modul LMS</h3>
-                    <button onclick="openModal()" class="bg-primary text-white px-6 py-3 rounded-2xl font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition">
-                        <span class="material-symbols-outlined">add</span> Buat Modul
-                    </button>
+                    <button onclick="openModal()" class="bg-primary text-white px-6 py-3 rounded-2xl font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition"><span class="material-symbols-outlined">add</span> Buat Modul</button>
                 </div>
                 <div id="module-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </section>
 
-            <!-- Tab Infografis -->
             <section id="tab-infografis-content" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-headline font-bold text-xl text-gray-800">Laporan Demografi Peserta</h3>
@@ -103,17 +87,12 @@
                 </div>
             </section>
 
-            <!-- Tab Mentoring -->
             <section id="tab-mentoring-content" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-headline font-bold text-xl text-gray-800">Manajemen Mentoring</h3>
+                    <h3 class="font-headline font-bold text-xl text-gray-800">Manajemen Mentoring & Chat</h3>
                     <label class="flex items-center cursor-pointer gap-3 bg-white px-4 py-2 border rounded-xl shadow-sm">
                         <span class="text-sm font-bold text-gray-600">Status Mentor:</span>
-                        <div class="relative">
-                            <input type="checkbox" id="mentor-switch" class="sr-only" onchange="toggleMentorStatus(this)">
-                            <div class="block bg-gray-300 w-10 h-6 rounded-full transition" id="mentor-switch-bg"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform" id="mentor-switch-dot"></div>
-                        </div>
+                        <div class="relative"><input type="checkbox" id="mentor-switch" class="sr-only" onchange="toggleMentorStatus(this)"><div class="block bg-gray-300 w-10 h-6 rounded-full transition" id="mentor-switch-bg"></div><div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform" id="mentor-switch-dot"></div></div>
                     </label>
                 </div>
                 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6" id="admin-mentoring-list">
@@ -123,39 +102,31 @@
         </main>
     </div>
 
-    <!-- ================= MODAL EDIT USER ================= -->
+    <!-- MODAL EDIT USER -->
     <div id="edit-user-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center hidden p-4">
         <div class="bg-white w-full max-w-sm p-8 rounded-[2rem] shadow-2xl relative">
             <button onclick="document.getElementById('edit-user-modal').classList.add('hidden')" class="absolute top-6 right-6 text-gray-400 font-bold hover:text-red-500 text-xl transition">×</button>
             <h2 class="font-headline font-bold text-xl mb-6 text-gray-800">Edit Data User</h2>
             <form id="editUserForm" class="space-y-4">
                 <input type="hidden" id="eu-id" />
-                <div>
-                    <label class="text-xs font-bold text-gray-400 mb-1 block uppercase tracking-wide">Nama Lengkap</label>
-                    <input type="text" id="eu-nama" required class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-primary transition" />
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-gray-400 mb-1 block uppercase tracking-wide">Poin Prestasi</label>
-                    <input type="number" id="eu-poin" required class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-primary transition" />
-                </div>
+                <div><label class="text-xs font-bold text-gray-400 mb-1 block uppercase tracking-wide">Nama Lengkap</label><input type="text" id="eu-nama" required class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-primary transition" /></div>
+                <div><label class="text-xs font-bold text-gray-400 mb-1 block uppercase tracking-wide">Poin Prestasi</label><input type="number" id="eu-poin" required class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-primary transition" /></div>
                 <button type="submit" id="btn-eu-save" class="w-full bg-primary text-white font-bold py-4 rounded-xl mt-4 hover:bg-blue-800 transition shadow-lg">Simpan Perubahan</button>
             </form>
         </div>
     </div>
 
-    <!-- ================= MODAL GRAFIK PREMIUM ================= -->
+    <!-- MODAL GRAFIK PREMIUM -->
     <div id="chart-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center hidden p-4">
         <div class="bg-white w-full max-w-3xl p-8 rounded-[2.5rem] shadow-2xl relative border border-gray-100">
             <button onclick="document.getElementById('chart-modal').classList.add('hidden')" class="absolute top-6 right-6 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center font-bold text-gray-500 hover:bg-red-500 hover:text-white transition">×</button>
             <h2 id="chart-user-name" class="font-headline font-bold text-2xl text-gray-800 mb-1">...</h2>
             <p class="text-xs text-gray-400 mb-6 uppercase font-black tracking-widest">Analitik Skor per Modul</p>
-            <div class="h-72 w-full p-4 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner">
-                <canvas id="pChart"></canvas>
-            </div>
+            <div class="h-72 w-full p-4 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner"><canvas id="pChart"></canvas></div>
         </div>
     </div>
 
-    <!-- ================= MODAL COURSE BUILDER ================= -->
+    <!-- MODAL COURSE BUILDER -->
     <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white w-full max-w-4xl p-6 sm:p-10 rounded-[2.5rem] shadow-2xl relative max-h-[95vh] overflow-y-auto">
             <h2 class="font-headline text-2xl font-bold mb-6 text-gray-800">Course Builder LMS</h2>
@@ -178,18 +149,12 @@
                 </div>
 
                 <div class="border-t border-gray-100 pt-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="font-bold text-gray-700 text-sm uppercase tracking-widest flex items-center gap-2"><span class="material-symbols-outlined text-primary text-lg">menu_book</span> 2. Alur Materi</h4>
-                        <button type="button" onclick="addPage()" class="text-xs bg-blue-50 text-primary font-bold px-4 py-2 rounded-xl hover:bg-primary hover:text-white transition shadow-sm">+ Tambah Halaman</button>
-                    </div>
+                    <div class="flex justify-between items-center mb-4"><h4 class="font-bold text-gray-700 text-sm uppercase tracking-widest flex items-center gap-2"><span class="material-symbols-outlined text-primary text-lg">menu_book</span> 2. Alur Materi</h4><button type="button" onclick="addPage()" class="text-xs bg-blue-50 text-primary font-bold px-4 py-2 rounded-xl hover:bg-primary hover:text-white transition shadow-sm">+ Tambah Halaman</button></div>
                     <div id="page-container" class="space-y-5"></div>
                 </div>
 
                 <div class="border-t border-gray-100 pt-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="font-bold text-gray-700 text-sm uppercase tracking-widest flex items-center gap-2"><span class="material-symbols-outlined text-orange-500 text-lg">psychology_alt</span> 3. Bank Soal Kuis</h4>
-                        <button type="button" onclick="addQuiz()" class="text-xs bg-orange-50 text-orange-600 font-bold px-4 py-2 rounded-xl hover:bg-orange-500 hover:text-white transition shadow-sm">+ Tambah Soal</button>
-                    </div>
+                    <div class="flex justify-between items-center mb-4"><h4 class="font-bold text-gray-700 text-sm uppercase tracking-widest flex items-center gap-2"><span class="material-symbols-outlined text-orange-500 text-lg">psychology_alt</span> 3. Bank Soal Kuis</h4><button type="button" onclick="addQuiz()" class="text-xs bg-orange-50 text-orange-600 font-bold px-4 py-2 rounded-xl hover:bg-orange-500 hover:text-white transition shadow-sm">+ Tambah Soal</button></div>
                     <div id="quiz-container" class="space-y-5"></div>
                 </div>
 
@@ -201,24 +166,42 @@
         </div>
     </div>
 
-    <!-- ================= SCRIPT & LOGIC SUPABASE ================= -->
-    <script>
-     
+    <!-- MODAL CHAT MENTORING -->
+    <div id="chat-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl relative flex flex-col h-[80vh]">
+            <div class="p-6 border-b flex justify-between items-center bg-gray-50 rounded-t-[2rem]">
+                <h2 class="font-headline font-bold text-xl text-primary flex items-center gap-2"><span class="material-symbols-outlined">forum</span> Ruang Diskusi</h2>
+                <button onclick="closeChat()" class="text-gray-400 hover:text-red-500 font-bold text-xl transition">×</button>
+            </div>
+            <div id="chat-box" class="flex-1 p-6 overflow-y-auto bg-gray-50/50 space-y-4 flex flex-col"></div>
+            <form id="chatForm" class="p-4 border-t bg-white rounded-b-[2rem] flex gap-2">
+                <input type="hidden" id="active-chat-id">
+                <input type="text" id="chat-msg" required placeholder="Ketik pesan..." autocomplete="off" class="flex-1 p-3 bg-gray-100 border rounded-xl outline-none focus:border-primary text-sm">
+                <button type="submit" class="bg-primary text-white px-4 py-3 rounded-xl hover:bg-blue-800 transition flex items-center justify-center"><span class="material-symbols-outlined">send</span></button>
+            </form>
+        </div>
+    </div>
 
+    <!-- SCRIPT & LOGIC -->
+    <script>
         window.onerror = function(msg) {
-            alert("Terjadi Error Sistem:\n" + msg);
+            alert("Terjadi Error:\n" + msg);
             const btnLogin = document.getElementById('btn-admin-login'); if(btnLogin) { btnLogin.innerText = "Masuk Dashboard"; btnLogin.disabled = false; }
             const btnSave = document.getElementById('btn-save'); if(btnSave) { btnSave.innerText = "Publish Modul LMS"; btnSave.disabled = false; }
         };
 
-        window.onload = function() { 
+        window.onload = async function() { 
             try { 
                 const admin = localStorage.getItem('healthlearn_admin');
                 if(admin) {
                     const parsed = JSON.parse(admin);
-                    if(parsed.mentor_active) {
-                        document.getElementById('mentor-switch').checked = true;
-                        toggleMentorStatus(document.getElementById('mentor-switch'));
+                    const { data } = await supabaseClient.from('users').select('mentor_active').eq('id', parsed.id);
+                    if(data && data.length > 0) {
+                        const isActive = data[0].mentor_active;
+                        document.getElementById('mentor-switch').checked = isActive;
+                        const bg = document.getElementById('mentor-switch-bg'); const dot = document.getElementById('mentor-switch-dot');
+                        if(isActive) { bg.classList.replace('bg-gray-300', 'bg-green-500'); dot.classList.add('translate-x-4'); } 
+                        else { bg.classList.replace('bg-green-500', 'bg-gray-300'); dot.classList.remove('translate-x-4'); }
                     }
                     showDashboard(); 
                 }
@@ -234,30 +217,28 @@
                 if(error) throw error;
                 if(data && data.length > 0) { localStorage.setItem('healthlearn_admin', JSON.stringify(data[0])); showDashboard(); } 
                 else alert("Akses Ditolak: Kredensial salah atau bukan Administrator.");
-            } catch(err) { alert("Gagal koneksi: " + err.message); btn.innerText = "Masuk Dashboard"; btn.disabled = false; }
+            } catch(err) { alert("Koneksi gagal: " + err.message); btn.innerText = "Masuk Dashboard"; btn.disabled = false; }
         };
 
         function showDashboard() { document.getElementById('login-view').classList.add('hidden'); document.getElementById('dashboard-view').classList.remove('hidden'); loadUsers(); }
         function logoutAdmin() { if(confirm('Akhiri sesi Admin?')) { localStorage.removeItem('healthlearn_admin'); location.reload(); } }
 
         function switchTab(t) {
-            document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active', 'border-b-2', 'border-primary', 'text-primary'); b.classList.add('text-gray-400'); });
+            document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active','border-b-2','border-primary','text-primary'); b.classList.add('text-gray-400'); });
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            
-            document.getElementById('tab-'+t).classList.add('active', 'border-b-2', 'border-primary', 'text-primary');
+            document.getElementById('tab-'+t).classList.add('active','border-b-2','border-primary','text-primary');
             document.getElementById('tab-'+t+'-content').classList.remove('hidden');
-            
             if(t === 'users') loadUsers(); else if(t === 'modules') loadModules(); else if(t === 'infografis') loadInfografis(); else if(t === 'mentoring') loadAdminMentoring();
         }
 
-        // ================= USER MANAGEMENT =================
+        // --- MANAJEMEN USER ---
         async function loadUsers() {
-            const tbody = document.getElementById('user-table'); tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center font-bold text-gray-400 animate-pulse">Menarik Data...</td></tr>';
+            const tbody = document.getElementById('user-table'); tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center font-bold text-gray-400 animate-pulse">Menarik Data dari Database...</td></tr>';
             try {
                 const { data: users, error } = await supabaseClient.from('users').select('*').order('total_points', { ascending: false });
                 if(error) throw error;
                 tbody.innerHTML = '';
-                if(!users || users.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center font-bold text-gray-400">Belum ada user terdaftar.</td></tr>';
+                if(!users || users.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center font-bold text-gray-400">Belum ada user.</td></tr>';
 
                 users.forEach(user => {
                     if(user.role === 'admin') return; 
@@ -267,27 +248,27 @@
                             <td class="p-6 text-sm text-gray-500">${user.email}</td>
                             <td class="p-6 text-center"><span class="bg-blue-100 text-primary px-4 py-1.5 rounded-full font-black text-sm shadow-sm">${user.total_points} Pts</span></td>
                             <td class="p-6 text-center flex justify-center gap-3">
-                                <button onclick="viewChart('${user.id}', '${user.nama_lengkap}')" class="text-blue-500 bg-white border border-blue-100 shadow-sm hover:bg-blue-500 hover:text-white p-2.5 rounded-xl transition" title="Grafik Progres"><span class="material-symbols-outlined text-sm block">timeline</span></button>
-                                <button onclick="openEditUser('${user.id}', '${user.nama_lengkap}', ${user.total_points})" class="text-orange-500 bg-white border border-orange-100 shadow-sm hover:bg-orange-500 hover:text-white p-2.5 rounded-xl transition" title="Edit Data"><span class="material-symbols-outlined text-sm block">edit</span></button>
-                                <button onclick="delUser('${user.id}')" class="text-red-500 bg-white border border-red-100 shadow-sm hover:bg-red-500 hover:text-white p-2.5 rounded-xl transition" title="Hapus User"><span class="material-symbols-outlined text-sm block">delete</span></button>
+                                <button onclick="viewChart('${user.id}', '${user.nama_lengkap}')" class="text-blue-500 bg-white border border-blue-100 shadow-sm hover:bg-blue-500 hover:text-white p-2.5 rounded-xl transition"><span class="material-symbols-outlined text-sm block">timeline</span></button>
+                                <button onclick="openEditUser('${user.id}', '${user.nama_lengkap}', ${user.total_points})" class="text-orange-500 bg-white border border-orange-100 shadow-sm hover:bg-orange-500 hover:text-white p-2.5 rounded-xl transition"><span class="material-symbols-outlined text-sm block">edit</span></button>
+                                <button onclick="delUser('${user.id}')" class="text-red-500 bg-white border border-red-100 shadow-sm hover:bg-red-500 hover:text-white p-2.5 rounded-xl transition"><span class="material-symbols-outlined text-sm block">delete</span></button>
                             </td>
                         </tr>`;
                 });
-            } catch(err) { tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center font-bold text-red-500">Error: ${err.message}</td></tr>`; }
+            } catch(err) { tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center font-bold text-red-500">Gagal memuat: ${err.message}</td></tr>`; }
         }
 
-        async function delUser(id) { if(confirm("Hapus akun user ini beserta riwayatnya selamanya?")) { const { error } = await supabaseClient.from('users').delete().eq('id', id); if(!error) loadUsers(); else alert("Gagal menghapus."); } }
-
+        async function delUser(id) { if(confirm("Hapus akun user ini selamanya?")) { const { error } = await supabaseClient.from('users').delete().eq('id', id); if(!error) loadUsers(); else alert("Gagal menghapus."); } }
         function openEditUser(id, nama, poin) { document.getElementById('edit-user-modal').classList.remove('hidden'); document.getElementById('eu-id').value = id; document.getElementById('eu-nama').value = nama; document.getElementById('eu-poin').value = poin; }
         
         document.getElementById('editUserForm').onsubmit = async (e) => {
             e.preventDefault(); const btn = document.getElementById('btn-eu-save'); btn.innerText = "Menyimpan..."; btn.disabled = true;
-            const { error } = await supabaseClient.from('users').update({ nama_lengkap: document.getElementById('eu-nama').value, total_points: parseInt(document.getElementById('eu-poin').value) }).eq('id', document.getElementById('eu-id').value);
+            const payload = { nama_lengkap: document.getElementById('eu-nama').value, total_points: parseInt(document.getElementById('eu-poin').value) };
+            const { error } = await supabaseClient.from('users').update(payload).eq('id', document.getElementById('eu-id').value);
             btn.disabled = false; btn.innerText = "Simpan Perubahan"; document.getElementById('edit-user-modal').classList.add('hidden');
             if(!error) loadUsers(); else alert("Gagal update user.");
         };
 
-        // ================= PREMIUM CHART =================
+        // --- CHART USER INDIVIDUAL ---
         let myChart = null;
         async function viewChart(id, name) {
             document.getElementById('chart-modal').classList.remove('hidden'); document.getElementById('chart-user-name').innerText = "Rapor Kuis: " + name;
@@ -299,11 +280,12 @@
                 if(!data || data.length === 0) { ctx.clearRect(0,0,400,400); ctx.font = "bold 16px Manrope, sans-serif"; ctx.fillStyle = "#9ca3af"; ctx.textAlign = "center"; ctx.fillText("User ini belum mengerjakan kuis apapun.", 200, 150); return; }
 
                 let gradient = ctx.createLinearGradient(0, 0, 0, 300); gradient.addColorStop(0, 'rgba(0, 90, 156, 0.5)'); gradient.addColorStop(1, 'rgba(0, 90, 156, 0.05)');
-                myChart = new Chart(ctx, { type: 'line', data: { labels: data.map(d => d.modules ? d.modules.title.substring(0,15) + '...' : 'Modul Terhapus'), datasets: [{ label: 'Skor Kuis', data: data.map(d => d.score), borderColor: '#005a9c', backgroundColor: gradient, borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#005a9c', pointBorderWidth: 2, pointRadius: 6, fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, suggestedMax: 100 }, x: { grid: { display: false } } } } });
+                myChart = new Chart(ctx, { type: 'line', data: { labels: data.map(d => d.modules ? d.modules.title.substring(0,15) + '...' : 'Modul Terhapus'), datasets: [{ label: 'Skor Kuis Terakhir', data: data.map(d => d.score), borderColor: '#005a9c', backgroundColor: gradient, borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#005a9c', pointBorderWidth: 2, pointRadius: 6, fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, suggestedMax: 100 }, x: { grid: { display: false } } } } });
             } catch (err) { alert("Gagal memuat grafik."); }
         }
+        function closeChart() { document.getElementById('chart-modal').classList.add('hidden'); }
 
-        // ================= INFOGRAFIS DATA =================
+        // --- INFOGRAFIS DEMOGRAFI ---
         let gChart = null, aChart = null;
         async function loadInfografis() {
             const { data: users, error } = await supabaseClient.from('users').select('jenis_kelamin, tanggal_lahir').neq('role', 'admin');
@@ -327,7 +309,7 @@
             aChart = new Chart(document.getElementById('ageChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(ageCount), datasets: [{ label: 'Jumlah Peserta', data: Object.values(ageCount), backgroundColor: '#10b981', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
         }
 
-        // ================= MENTORING ADMIN =================
+        // --- MENTORING ADMIN & CHAT ---
         async function toggleMentorStatus(el) {
             const bg = document.getElementById('mentor-switch-bg'); const dot = document.getElementById('mentor-switch-dot'); const isActive = el.checked;
             if(isActive) { bg.classList.replace('bg-gray-300', 'bg-green-500'); dot.classList.add('translate-x-4'); } else { bg.classList.replace('bg-green-500', 'bg-gray-300'); dot.classList.remove('translate-x-4'); }
@@ -338,24 +320,68 @@
         async function loadAdminMentoring() {
             const { data } = await supabaseClient.from('mentoring').select('*, users(nama_lengkap)').order('created_at', { ascending: false });
             const list = document.getElementById('admin-mentoring-list'); list.innerHTML = '';
-            if(!data || data.length === 0) return list.innerHTML = '<p class="text-center text-gray-400 font-bold py-10">Belum ada request mentoring.</p>';
-            
+            if(!data || data.length === 0) return list.innerHTML = '<p class="text-center text-gray-400 font-bold py-10">Belum ada request mentoring dari user.</p>';
             data.forEach(m => {
                 list.innerHTML += `
-                <div class="p-4 border rounded-xl bg-gray-50 mb-4 flex justify-between items-center">
-                    <div>
-                        <p class="font-bold text-primary">${m.topic}</p>
+                <div class="p-4 border rounded-xl bg-gray-50 mb-4 flex justify-between items-center gap-4">
+                    <div class="flex-1">
+                        <span class="text-[10px] font-black uppercase text-primary bg-blue-100 px-2 py-0.5 rounded">${m.module_title || 'Umum'}</span>
+                        <p class="font-bold text-gray-800 mt-1">${m.topic}</p>
                         <p class="text-sm text-gray-600">Dari: ${m.users?.nama_lengkap}</p>
                         <p class="text-xs text-gray-400">Jadwal: ${new Date(m.schedule).toLocaleString()}</p>
                     </div>
-                    <button onclick="alert('Fitur Chat Room segera disambungkan!')" class="bg-blue-100 text-primary font-bold px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">chat</span> Balas Pesan
-                    </button>
+                    <div class="flex flex-col items-end gap-2">
+                        <select onchange="updateMentoringStatus('${m.id}', this.value)" class="text-xs font-bold p-1 border rounded bg-white outline-none">
+                            <option value="pending" ${m.status==='pending'?'selected':''}>Pending</option>
+                            <option value="approved" ${m.status==='approved'?'selected':''}>Approved</option>
+                            <option value="completed" ${m.status==='completed'?'selected':''}>Completed</option>
+                        </select>
+                        <button onclick="openChat('${m.id}')" class="bg-blue-100 text-primary font-bold px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">forum</span> Buka Chat
+                        </button>
+                    </div>
                 </div>`;
             });
         }
 
-        // ================= MODULE CRUD LMS =================
+        async function updateMentoringStatus(id, newStatus) { await supabaseClient.from('mentoring').update({ status: newStatus }).eq('id', id); }
+
+        let chatInterval = null;
+        function openChat(mentoringId) {
+            document.getElementById('chat-modal').classList.remove('hidden'); document.getElementById('active-chat-id').value = mentoringId;
+            loadChat(mentoringId); chatInterval = setInterval(() => loadChat(mentoringId), 3000);
+        }
+        function closeChat() { document.getElementById('chat-modal').classList.add('hidden'); clearInterval(chatInterval); }
+        
+        async function loadChat(mentoringId) {
+            const adminData = JSON.parse(localStorage.getItem('healthlearn_admin'));
+            const { data } = await supabaseClient.from('mentoring_chats').select('*').eq('mentoring_id', mentoringId).order('created_at', { ascending: true });
+            const box = document.getElementById('chat-box');
+            const atBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 50;
+            box.innerHTML = '';
+            if(!data || data.length === 0) { box.innerHTML = '<p class="text-center text-gray-400 text-sm mt-10">Mulai percakapan...</p>'; return; }
+            
+            data.forEach(c => {
+                const isMe = c.sender_id === adminData.id;
+                box.innerHTML += `
+                    <div class="max-w-[80%] p-3 rounded-2xl text-sm ${isMe ? 'bg-primary text-white self-end rounded-br-sm' : 'bg-white border text-gray-800 self-start rounded-bl-sm'} shadow-sm">
+                        <p class="font-bold text-[10px] opacity-70 mb-1">${c.sender_name}</p>
+                        <p>${c.message}</p>
+                    </div>`;
+            });
+            if(atBottom) box.scrollTop = box.scrollHeight;
+        }
+
+        document.getElementById('chatForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const adminData = JSON.parse(localStorage.getItem('healthlearn_admin'));
+            const msgInput = document.getElementById('chat-msg'); const msg = msgInput.value; const mentoringId = document.getElementById('active-chat-id').value;
+            msgInput.value = '';
+            await supabaseClient.from('mentoring_chats').insert([{ mentoring_id: mentoringId, sender_id: adminData.id, sender_name: adminData.nama_lengkap + " (Admin)", message: msg }]);
+            loadChat(mentoringId);
+        };
+
+        // --- MODULE CRUD LMS ---
         async function loadModules() {
             const l = document.getElementById('module-list'); l.innerHTML = '<div class="col-span-full text-center py-12 font-bold text-gray-400 animate-pulse">Menyiapkan Kurikulum LMS...</div>';
             try {
@@ -383,45 +409,36 @@
             } catch(err) { l.innerHTML = `<div class="col-span-full text-center font-bold text-red-500 py-10">Error memuat modul: ${err.message}</div>`; }
         }
 
-        async function delMod(id) { if(confirm("Hapus modul beserta materi dan kuisnya selamanya?")) { await supabaseClient.from('modules').delete().eq('id', id); loadModules(); } }
-        function editMod(id, title) { alert("Mode Edit Aktif.\nSilakan masukkan ulang Alur Materi & Kuis."); document.getElementById('mod-id').value = id; document.getElementById('mod-title').value = title; openModal(); }
+        async function delMod(id) { if(confirm("Tindakan ini tidak bisa dibatalkan. Hapus modul beserta semua halaman materi dan pertanyaan kuisnya?")) { const { error } = await supabaseClient.from('modules').delete().eq('id', id); if(!error) loadModules(); else alert("Gagal menghapus: " + error.message); } }
+        function editMod(id, title) { alert("Mode Edit Aktif.\nSilakan masukkan ulang seluruh Alur Materi & Kuis yang baru (konten yang lama akan tertimpa/replace)."); document.getElementById('mod-id').value = id; document.getElementById('mod-title').value = title; openModal(); }
 
-        // ================= DYNAMIC COURSE BUILDER =================
         function openModal() { document.getElementById('modal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; if(document.getElementById('page-container').children.length === 0) addPage(); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; document.getElementById('moduleForm').reset(); document.getElementById('page-container').innerHTML = ''; document.getElementById('quiz-container').innerHTML = ''; document.getElementById('mod-id').value = ''; }
 
         function addPage() {
             const d = document.createElement('div'); d.className = "p-5 bg-white border-2 border-blue-50 rounded-2xl relative page-item shadow-sm transition hover:border-blue-200";
-            d.innerHTML = `
-                <div class="flex flex-col sm:flex-row gap-3 mb-4"><select class="p-3.5 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 text-gray-700 outline-none p-type sm:w-1/3 focus:border-primary transition" onchange="togglePUI(this)"><option value="youtube">📺 Embed (YouTube/Slides)</option><option value="article">📝 Artikel HTML</option></select><input type="text" placeholder="Judul Halaman Materi" required class="flex-1 p-3.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 p-title outline-none focus:border-primary transition"></div>
-                <div class="p-ui-area bg-gray-50 p-4 rounded-xl border border-gray-100"><input type="url" placeholder="Paste Link Embed URL" required class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm p-data outline-none focus:border-primary transition"></div>
-                <button type="button" onclick="this.parentElement.remove()" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-md hover:scale-110 hover:bg-red-600 transition">×</button>`;
+            d.innerHTML = `<div class="flex flex-col sm:flex-row gap-3 mb-4"><select class="p-3.5 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 text-gray-700 outline-none p-type sm:w-1/3 focus:border-primary transition" onchange="togglePUI(this)"><option value="youtube">📺 Embed (YouTube/Google Slides)</option><option value="article">📝 Artikel HTML</option></select><input type="text" placeholder="Judul Halaman Materi" required class="flex-1 p-3.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 p-title outline-none focus:border-primary transition"></div><div class="p-ui-area bg-gray-50 p-4 rounded-xl border border-gray-100"><input type="url" placeholder="Paste Link Embed URL (Misal: https://youtube.com/embed/xyz)" required class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm p-data outline-none focus:border-primary transition"></div><button type="button" onclick="this.parentElement.remove()" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-md hover:scale-110 hover:bg-red-600 transition">×</button>`;
             document.getElementById('page-container').appendChild(d);
         }
 
         function togglePUI(s) {
             const a = s.closest('.page-item').querySelector('.p-ui-area');
-            if(s.value === 'article') { a.innerHTML = `<input type="url" placeholder="URL Gambar Header (Opsional)" class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm mb-3 p-data-img outline-none focus:border-primary transition"><textarea class="w-full p-4 bg-white border border-gray-200 rounded-xl text-sm p-data-text outline-none focus:border-primary transition leading-relaxed" required placeholder="Ketik isi materi di sini..." rows="6"></textarea>`; } 
-            else { a.innerHTML = '<input type="url" placeholder="Paste Link Embed (Youtube/Google Slides)" required class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm p-data outline-none focus:border-primary transition">'; }
+            if(s.value === 'article') { a.innerHTML = `<input type="url" placeholder="URL Gambar Header Artikel (Opsional)" class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm mb-3 p-data-img outline-none focus:border-primary transition" title="Gambar akan muncul estetik di atas teks bacaan"><textarea class="w-full p-4 bg-white border border-gray-200 rounded-xl text-sm p-data-text outline-none focus:border-primary transition leading-relaxed" required placeholder="Ketik isi materi di sini... (Anda juga dapat menggunakan tag HTML dasar seperti <b>, <i>, <br> jika paham)" rows="6"></textarea>`; } 
+            else { a.innerHTML = '<input type="url" placeholder="Paste Link Embed (Youtube/Google Slides Publik)" required class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm p-data outline-none focus:border-primary transition">'; }
         }
 
         function addQuiz() {
             const d = document.createElement('div'); d.className = "p-5 bg-white border-2 border-orange-50 rounded-2xl relative quiz-item shadow-sm transition hover:border-orange-200";
-            d.innerHTML = `
-                <div class="bg-orange-50 p-4 rounded-xl border border-orange-100 mb-4"><select class="w-full sm:w-auto mb-3 p-2.5 border border-orange-200 rounded-xl text-sm font-bold bg-white text-orange-600 outline-none focus:border-orange-400 transition q-jenis" onchange="toggleQUI(this)"><option value="mc">Pilihan Ganda (A-D)</option><option value="tf">Benar / Salah Saja</option></select><input type="text" placeholder="Tuliskan Pertanyaan Kuis di sini..." required class="w-full p-3.5 border border-orange-200 rounded-xl text-sm font-bold text-gray-800 focus:border-orange-400 outline-none transition q-question"></div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 q-opt-area"><div class="flex items-center gap-2"><span class="font-black text-gray-300 w-4">A</span> <input type="text" placeholder="Jawaban Opsi A" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-a" required></div><div class="flex items-center gap-2"><span class="font-black text-gray-300 w-4">B</span> <input type="text" placeholder="Jawaban Opsi B" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-b" required></div><div class="flex items-center gap-2 mc-only"><span class="font-black text-gray-300 w-4">C</span> <input type="text" placeholder="Jawaban Opsi C" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-c" required></div><div class="flex items-center gap-2 mc-only"><span class="font-black text-gray-300 w-4">D</span> <input type="text" placeholder="Jawaban Opsi D" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-d" required></div></div>
-                <select class="w-full p-3.5 border border-gray-200 rounded-xl text-sm font-black bg-gray-50 text-gray-700 outline-none focus:border-orange-400 transition q-correct"><option value="A">⭐ Kunci Jawaban: A</option><option value="B">⭐ Kunci Jawaban: B</option><option value="C" class="mc-only">⭐ Kunci Jawaban: C</option><option value="D" class="mc-only">⭐ Kunci Jawaban: D</option></select>
-                <button type="button" onclick="this.parentElement.remove()" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-md hover:scale-110 hover:bg-red-600 transition">×</button>`;
+            d.innerHTML = `<div class="bg-orange-50 p-4 rounded-xl border border-orange-100 mb-4"><select class="w-full sm:w-auto mb-3 p-2.5 border border-orange-200 rounded-xl text-sm font-bold bg-white text-orange-600 outline-none focus:border-orange-400 transition q-jenis" onchange="toggleQUI(this)"><option value="mc">Pilihan Ganda (A-D)</option><option value="tf">Benar / Salah Saja</option></select><input type="text" placeholder="Tuliskan Pertanyaan Kuis di sini..." required class="w-full p-3.5 border border-orange-200 rounded-xl text-sm font-bold text-gray-800 focus:border-orange-400 outline-none transition q-question"></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 q-opt-area"><div class="flex items-center gap-2"><span class="font-black text-gray-300 w-4">A</span> <input type="text" placeholder="Teks Jawaban Opsi A" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-a" required></div><div class="flex items-center gap-2"><span class="font-black text-gray-300 w-4">B</span> <input type="text" placeholder="Teks Jawaban Opsi B" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-b" required></div><div class="flex items-center gap-2 mc-only"><span class="font-black text-gray-300 w-4">C</span> <input type="text" placeholder="Teks Jawaban Opsi C" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-c" required></div><div class="flex items-center gap-2 mc-only"><span class="font-black text-gray-300 w-4">D</span> <input type="text" placeholder="Teks Jawaban Opsi D" class="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 transition q-d" required></div></div><select class="w-full p-3.5 border border-gray-200 rounded-xl text-sm font-black bg-gray-50 text-gray-700 outline-none focus:border-orange-400 transition q-correct"><option value="A">⭐ Kunci Jawaban: A</option><option value="B">⭐ Kunci Jawaban: B</option><option value="C" class="mc-only">⭐ Kunci Jawaban: C</option><option value="D" class="mc-only">⭐ Kunci Jawaban: D</option></select><button type="button" onclick="this.parentElement.remove()" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-md hover:scale-110 hover:bg-red-600 transition">×</button>`;
             document.getElementById('quiz-container').appendChild(d);
         }
 
         function toggleQUI(s) {
             const item = s.closest('.quiz-item'); const inA = item.querySelector('.q-a'); const inB = item.querySelector('.q-b'); const mcOnly = item.querySelectorAll('.mc-only');
-            if(s.value === 'tf') { inA.value = "Benar"; inA.readOnly = true; inA.classList.add('bg-gray-100', 'text-gray-500'); inB.value = "Salah"; inB.readOnly = true; inB.classList.add('bg-gray-100', 'text-gray-500'); mcOnly.forEach(el => { el.style.display = 'none'; el.removeAttribute('required'); });
-            } else { inA.value = ""; inA.readOnly = false; inA.classList.remove('bg-gray-100', 'text-gray-500'); inB.value = ""; inB.readOnly = false; inB.classList.remove('bg-gray-100', 'text-gray-500'); mcOnly.forEach(el => { el.style.display = 'flex'; el.tagName==='INPUT' ? el.setAttribute('required', 'true') : null; }); }
+            if(s.value === 'tf') { inA.value = "Benar"; inA.readOnly = true; inA.classList.add('bg-gray-100', 'text-gray-500'); inB.value = "Salah"; inB.readOnly = true; inB.classList.add('bg-gray-100', 'text-gray-500'); mcOnly.forEach(el => { el.style.display = 'none'; el.removeAttribute('required'); }); } 
+            else { inA.value = ""; inA.readOnly = false; inA.classList.remove('bg-gray-100', 'text-gray-500'); inB.value = ""; inB.readOnly = false; inB.classList.remove('bg-gray-100', 'text-gray-500'); mcOnly.forEach(el => { el.style.display = 'flex'; el.tagName==='INPUT' ? el.setAttribute('required', 'true') : null; }); }
         }
 
-        // ================= SAVE DATA TO SUPABASE =================
         document.getElementById('moduleForm').onsubmit = async (e) => {
             e.preventDefault(); const btn = document.getElementById('btn-save'); btn.innerText = "Merakit & Menyimpan ke Database..."; btn.disabled = true;
             try {
@@ -437,8 +454,7 @@
                 }
 
                 const quizzes = Array.from(document.querySelectorAll('.quiz-item')).map(el => ({
-                    question: el.querySelector('.q-question').value, option_a: el.querySelector('.q-a').value, option_b: el.querySelector('.q-b').value,
-                    option_c: el.querySelector('.q-c')?.value || "-", option_d: el.querySelector('.q-d')?.value || "-", correct_answer: el.querySelector('.q-correct').value
+                    question: el.querySelector('.q-question').value, option_a: el.querySelector('.q-a').value, option_b: el.querySelector('.q-b').value, option_c: el.querySelector('.q-c')?.value || "-", option_d: el.querySelector('.q-d')?.value || "-", correct_answer: el.querySelector('.q-correct').value
                 }));
 
                 let modId = document.getElementById('mod-id').value;
