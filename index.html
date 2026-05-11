@@ -3,689 +3,514 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#005a9c">
-    
-    <title>HealthLearn - App</title>
+    <title>SiRasa - Edukasi Kesehatan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- PANGGIL FILE CONFIG DI SINI -->
+    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
     <script src="config.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script> tailwind.config = { theme: { extend: { colors: { primary: "#005a9c", secondary: "#f0f4f8", accent: "#ef4444" }, fontFamily: { headline: ["Lexend"], body: ["Manrope"] } } } } </script>
     <style>
         .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
         .hide-scroll::-webkit-scrollbar { display: none; }
-        .tab-btn-desktop.active { background-color: #eff6ff; color: #005a9c; border-left: 4px solid #005a9c; font-weight: bold; }
-        .tab-btn-mobile.active { color: #005a9c; }
+        .nav-desktop.active { color: #005a9c; font-weight: 700; border-bottom: 2px solid #005a9c; }
+        .nav-mobile.active { color: #005a9c; font-weight: 700; }
+
+        /* ====== ANIMASI BUKU RESPONSIF ====== */
+        /* Kontainer Utama - Default Mobile (Potret) */
+        .responsive-book-area {
+            display: flex; flex-direction: column; width: 100%; max-width: 600px; 
+            margin: 0 auto; position: relative; background: #fff; border-radius: 1rem; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1); min-height: 80vh; overflow: hidden;
+        }
+        /* Efek Lipatan Kertas (Aktif di Mobile) */
+        .page-flip-curl { position: relative; }
+        .page-flip-curl::after {
+            content: ''; position: absolute; bottom: 0; right: 0; width: 0px; height: 0px;
+            background: linear-gradient(135deg, rgba(255,255,255,1) 30%, rgba(229,231,235,1) 50%, rgba(156,163,175,0.5) 100%);
+            box-shadow: -5px -5px 10px rgba(0,0,0,0.1); border-radius: 0 0 1rem 0;
+            transition: width 0.4s ease, height 0.4s ease, border-radius 0.4s ease; z-index: 10;
+        }
+        .page-flip-curl.flipping::after { width: 120px; height: 120px; border-radius: 100% 0 1rem 0; }
+
+        /* Desktop Mode (Landscape & 3D Flip) - Layar > 768px */
+        @media (min-width: 768px) {
+            .responsive-book-area { max-width: 1100px; min-height: 70vh; }
+            .page-flip-curl::after { display: none; } /* Matikan lipatan kertas di Desktop */
+            
+            .book-flip-out { animation: turnPageOut 0.5s forwards ease-in; transform-origin: left center; }
+            .book-flip-in { animation: turnPageIn 0.5s forwards ease-out; transform-origin: left center; }
+            
+            @keyframes turnPageOut { 0% { transform: perspective(1500px) rotateY(0deg); opacity: 1; } 100% { transform: perspective(1500px) rotateY(-90deg); opacity: 0; } }
+            @keyframes turnPageIn { 0% { transform: perspective(1500px) rotateY(90deg); opacity: 0; } 100% { transform: perspective(1500px) rotateY(0deg); opacity: 1; } }
+        }
+        .book-gutter { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(0,0,0,0.03); box-shadow: 0 0 10px rgba(0,0,0,0.1); z-index: 5; transform: translateX(-50%); }
     </style>
 </head>
-<body class="bg-secondary font-body text-gray-800 min-h-screen pb-20 md:pb-0">
+<body class="bg-secondary font-body text-gray-800 min-h-screen">
 
     <nav class="glass-nav fixed top-0 w-full z-40 px-6 py-4 flex justify-between items-center">
-        <div class="flex items-center gap-2 cursor-pointer" onclick="closeUserDashboard()">
-            <div class="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-md">H</div>
-            <span class="font-headline text-xl font-bold text-primary tracking-tight hidden sm:block">HealthLearn</span>
+        <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('beranda')">
+            <div class="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-md">S</div>
+            <span class="font-headline text-xl font-bold text-primary tracking-tight hidden sm:block">SiRasa</span>
         </div>
         
-        <div class="flex items-center gap-4">
-            <button onclick="toggleProfileMenu(event)" id="profile-btn" class="flex items-center gap-3 bg-white px-2 py-2 pr-4 rounded-full border shadow-sm transition hover:bg-gray-50">
+        <div class="flex items-center">
+            <div id="desktop-tabs" class="hidden md:flex items-center gap-8 mr-8 font-semibold text-sm text-gray-400 h-full">
+                <button onclick="switchView('beranda')" id="tab-desk-beranda" class="nav-desktop active py-2 transition">Beranda</button>
+                <button onclick="switchView('rapor')" id="tab-desk-rapor" class="nav-desktop py-2 transition">Rapor</button>
+                <button onclick="switchView('mentoring')" id="tab-desk-mentoring" class="nav-desktop mentoring-tab-btn hidden py-2 transition relative">
+    Mentoring
+    <span id="notif-desk" class="hidden absolute top-1 right-[-12px] flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span></span>
+</button>
+            </div>
+
+            <button onclick="toggleProfileMenu(event)" id="profile-btn" class="flex items-center gap-3 bg-white px-2 py-2 pr-4 rounded-full border shadow-sm transition hover:bg-gray-50 relative">
                 <img id="user-avatar" src="https://ui-avatars.com/api/?name=Guest" class="w-9 h-9 rounded-full" />
                 <div class="flex flex-col text-left hidden sm:flex">
-                    <span id="user-status-text" class="font-bold text-sm leading-none">Masuk</span>
-                    <span id="user-points-text" class="text-[10px] text-gray-400 mt-1 font-black leading-none uppercase">0 Pts</span>
+                    <span id="user-status-text" class="font-bold text-sm leading-none">Tamu</span>
+                    <span id="user-points-text" class="text-[10px] text-gray-400 mt-1 font-black uppercase"></span>
                 </div>
             </button>
             <div id="profile-dropdown" class="hidden absolute right-6 top-20 w-56 bg-white rounded-2xl shadow-2xl border p-2 z-50">
-                <button id="btn-profil-menu" onclick="openUserDashboard()" class="hidden flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-600 hover:bg-blue-50 hover:text-primary font-bold rounded-xl transition">
-                    <span class="material-symbols-outlined">person</span> Profil Saya
+                <button id="btn-profil-menu" onclick="switchView('profil')" class="hidden flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-600 hover:bg-blue-50 rounded-xl transition">
+                    <span class="material-symbols-outlined">manage_accounts</span> Pengaturan Profil
                 </button>
-                <button onclick="checkAccess('admin')" id="admin-dropdown-btn" class="hidden flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition">
+                <button id="admin-dropdown-btn" onclick="window.location.href='admin.html'" class="hidden flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition">
                     <span class="material-symbols-outlined">dashboard</span> Panel Admin
-                </button>
-                <button id="btn-logout-menu" onclick="logout()" class="hidden flex items-center gap-3 w-full px-4 py-3 text-sm text-red-500 font-bold hover:bg-red-50 rounded-xl transition">
-                    <span class="material-symbols-outlined">logout</span> Keluar
                 </button>
                 <button id="btn-login-menu" onclick="openAuthModal()" class="flex items-center gap-3 w-full px-4 py-3 text-sm text-primary font-bold hover:bg-blue-50 rounded-xl transition">
                     <span class="material-symbols-outlined">login</span> Masuk Akun
+                </button>
+                <button id="btn-logout-menu" onclick="logout()" class="hidden flex items-center gap-3 w-full px-4 py-3 text-sm text-red-500 font-bold hover:bg-red-50 rounded-xl transition">
+                    <span class="material-symbols-outlined">logout</span> Keluar
                 </button>
             </div>
         </div>
     </nav>
 
-    <main id="main-view" class="max-w-7xl mx-auto px-4 md:px-6 pt-28 pb-6">
-        <div class="bg-gradient-to-br from-[#00478d] to-[#0073e6] rounded-[2rem] p-8 md:p-12 text-white mb-8 shadow-xl">
-            <h1 id="greeting-text" class="font-headline text-2xl md:text-4xl font-bold mb-2">Halo! Siap Belajar? 🚀</h1>
-            <p class="text-blue-100 text-sm md:text-base opacity-90 max-w-xl">Pilih modul, kumpulkan poin, dan tingkatkan prestasimu di leaderboard.</p>
-        </div>
-        <div id="course-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
-    </main>
-
-    <div id="main-mobile-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 pb-6 z-40 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        <button onclick="closeUserDashboard()" class="flex flex-col items-center gap-1 text-primary p-2 flex-1 transition">
-            <span class="material-symbols-outlined text-2xl">menu_book</span><span class="text-[10px] font-bold">Materi</span>
-        </button>
-        <button onclick="openUserDashboard()" class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary p-2 flex-1 transition">
-            <span class="material-symbols-outlined text-2xl">person</span><span class="text-[10px] font-bold">Profil</span>
-        </button>
-    </div>
-
-    <section id="user-dashboard-view" class="hidden fixed inset-0 bg-secondary z-50 overflow-y-auto pt-24 pb-24 md:pb-6">
-        <div class="max-w-6xl mx-auto px-4 md:px-6 flex flex-col md:flex-row gap-6">
-            <div class="hidden md:block w-full md:w-1/4">
-                <div class="bg-white rounded-3xl p-4 border shadow-sm flex flex-col gap-2">
-                    <button onclick="switchUserTab('rapor')" id="tab-rapor-desktop" class="tab-btn-desktop active flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl transition"><span class="material-symbols-outlined">emoji_events</span> Rapor & Reward</button>
-                    <button onclick="switchUserTab('profil')" id="tab-profil-desktop" class="tab-btn-desktop flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl transition"><span class="material-symbols-outlined">manage_accounts</span> Edit Profil</button>
-                    <button onclick="switchUserTab('mentoring')" id="tab-mentoring-desktop" class="tab-btn-desktop mentoring-tab-btn flex items-center gap-3 px-4 py-3 text-sm text-gray-500 rounded-xl transition hidden"><span class="material-symbols-outlined">support_agent</span> Mentoring</button>
-                    <button onclick="closeUserDashboard()" class="flex items-center gap-3 px-4 py-3 text-sm text-red-500 font-bold rounded-xl mt-4"><span class="material-symbols-outlined">arrow_back</span> Kembali</button>
+    <div class="pt-28 pb-32">
+        <main id="view-beranda" class="app-view max-w-7xl mx-auto px-4 md:px-6">
+            <div class="bg-gradient-to-br from-[#00478d] to-[#0073e6] rounded-[2rem] p-8 md:p-12 text-white mb-8 shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <h1 id="greeting-text" class="font-headline text-2xl md:text-4xl font-bold mb-2">Selamat Datang di SiRasa</h1>
+                    <p class="text-blue-100 text-sm md:text-base opacity-90 max-w-xl text-balance">Platform edukasi kesehatan reproduksi dan HIV/AIDS yang aman, rahasia, dan informatif.</p>
                 </div>
             </div>
+            <div id="course-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        </main>
 
-            <div class="w-full md:w-3/4">
-                <div id="content-rapor" class="user-tab-content space-y-6">
-                    <div class="bg-white rounded-3xl p-6 border shadow-sm flex items-center gap-6">
-                        <div id="reward-badge" class="w-20 h-20 bg-blue-50 text-4xl flex items-center justify-center rounded-full shadow-inner border border-blue-100">🌱</div>
-                        <div>
-                            <h3 class="font-headline font-bold text-xl mb-1">Status Prestasi</h3>
-                            <p id="reward-text" class="text-sm text-gray-500 font-bold mb-2">Health Beginner</p>
-                            <span id="user-dashboard-points" class="bg-primary text-white text-xs font-black px-3 py-1 rounded-full shadow-sm">0 Poin Total</span>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-3xl p-6 border shadow-sm">
-                        <h3 class="font-headline font-bold mb-6">Grafik Progres Belajar</h3>
-                        <div class="h-64 w-full"><canvas id="userProgressChart"></canvas></div>
-                    </div>
+        <main id="view-rapor" class="app-view hidden max-w-4xl mx-auto px-4 md:px-6">
+            <div class="bg-white rounded-3xl p-6 border shadow-sm flex items-center gap-6 mb-6">
+                <div class="w-16 h-16 bg-blue-50 flex items-center justify-center rounded-full text-blue-500"><span class="material-symbols-outlined text-3xl">workspace_premium</span></div>
+                <div>
+                    <h3 class="font-headline font-bold text-xl mb-1">Status Akademik</h3>
+                    <p class="text-sm text-gray-500 font-bold">Peringkat Edukasi</p>
+                    <span id="user-dashboard-points" class="text-primary font-black text-xs uppercase tracking-widest mt-1 block">0 Poin</span>
                 </div>
+            </div>
+            <div class="bg-white rounded-3xl p-6 border shadow-sm">
+                <h3 class="font-headline font-bold mb-6 text-gray-700">Grafik Nilai Modul</h3>
+                <div class="h-64 w-full"><canvas id="userProgressChart"></canvas></div>
+            </div>
+        </main>
 
-                <div id="content-profil" class="user-tab-content hidden">
-                    <div class="bg-white rounded-3xl p-6 border shadow-sm">
-                        <h3 class="font-headline font-bold text-xl mb-6">Informasi Akun</h3>
-                        <form id="editProfilForm" class="space-y-4 max-w-md">
-                            <div><label class="text-xs font-bold text-gray-400">Nama Lengkap</label><input type="text" id="ep-nama" required class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:border-primary"></div>
-                            <div><label class="text-xs font-bold text-gray-400">Nomor HP (WA)</label><input type="tel" id="ep-nohp" placeholder="08xxx" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:border-primary"></div>
-                            <div><label class="text-xs font-bold text-gray-400">Email (Tidak dapat diubah)</label><input type="email" id="ep-email" disabled class="w-full p-3 bg-gray-100 border rounded-xl outline-none text-gray-400"></div>
-                            <button type="submit" id="btn-ep-save" class="w-full bg-primary text-white font-bold py-4 rounded-xl mt-4 shadow-lg hover:bg-blue-800 transition">Update Profil</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div id="content-mentoring" class="user-tab-content hidden space-y-6">
-                    <div class="bg-white rounded-3xl p-6 border shadow-sm">
-                        <h3 class="font-headline font-bold text-xl mb-4">Request Jadwal Mentoring</h3>
+        <main id="view-mentoring" class="app-view hidden max-w-5xl mx-auto px-4 md:px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-3xl p-6 border shadow-sm sticky top-28">
+                        <h3 class="font-headline font-bold text-lg mb-4">Konsultasi Baru</h3>
                         <form id="mentoringForm" class="flex flex-col gap-4">
-                            <select id="m-module" required class="p-3 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
-                                <option value="" disabled selected>Pilih Modul yang Ingin Didiskusikan...</option>
-                            </select>
-                            <input type="text" id="m-topic" required placeholder="Topik / Pertanyaan Spesifik..." class="p-3 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
-                            <input type="datetime-local" id="m-date" required class="p-3 bg-gray-50 border rounded-xl outline-none text-sm text-gray-500">
-                            <button type="submit" class="bg-primary text-white font-bold px-6 py-3 rounded-xl shadow-md">Ajukan Mentoring</button>
+                            <select id="m-module" required class="p-3 bg-gray-50 border rounded-xl outline-none text-sm"></select>
+                            <input type="text" id="m-topic" required placeholder="Topik pertanyaan..." class="p-3 bg-gray-50 border rounded-xl outline-none text-sm">
+                            
+                            <label class="flex items-center gap-2 cursor-pointer mb-2">
+                                <input type="checkbox" id="m-anonim" class="w-4 h-4 accent-primary">
+                                <span class="text-xs font-bold text-gray-500">Kirim sebagai Anonim (Rahasia)</span>
+                            </label>
+                            <button type="submit" class="bg-primary text-white font-bold py-4 rounded-xl shadow-lg hover:opacity-90">Kirim Pengajuan</button>
                         </form>
                     </div>
-                    <div class="bg-white rounded-3xl p-6 border shadow-sm">
-                        <h3 class="font-headline font-bold text-xl mb-4">Jadwal Saya & Chat</h3>
-                        <div id="mentoring-list" class="space-y-3"><p class="text-sm text-gray-400">Belum ada jadwal diajukan.</p></div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div id="mentoring-list" class="space-y-3"></div>
+                </div>
+            </div>
+        </main>
+
+        <main id="view-profil" class="app-view hidden max-w-2xl mx-auto px-4 md:px-6">
+            <div class="bg-white rounded-3xl p-8 border shadow-sm">
+                <h3 class="font-headline font-bold text-2xl text-gray-800 mb-8 pb-4 border-b">Pengaturan Akun</h3>
+                <form id="editProfilForm" class="space-y-5">
+                    <div><label class="text-[10px] font-black text-gray-400 uppercase mb-1 block">Nama Lengkap</label><input type="text" id="ep-nama" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none font-bold"></div>
+                    <div><label class="text-[10px] font-black text-gray-400 uppercase mb-1 block">Nomor WhatsApp</label><input type="tel" id="ep-nohp" class="w-full p-4 bg-gray-50 border rounded-xl outline-none"></div>
+                    <div><label class="text-[10px] font-black text-gray-400 uppercase mb-1 block">Email Akses</label><input type="email" id="ep-email" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none"></div>
+                    <button type="submit" id="btn-ep-save" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-6">Simpan Perubahan</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <div id="mobile-nav" class="hidden md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 pb-6 z-40 rounded-t-3xl shadow-lg">
+        <button onclick="switchView('beranda')" id="tab-mob-beranda" class="nav-mobile active flex flex-col items-center gap-1 p-2 flex-1 text-gray-400 transition"><span class="material-symbols-outlined text-2xl">home</span><span class="text-[10px] uppercase font-bold">Beranda</span></button>
+        <button onclick="switchView('rapor')" id="tab-mob-rapor" class="nav-mobile flex flex-col items-center gap-1 p-2 flex-1 text-gray-400 transition hidden"><span class="material-symbols-outlined text-2xl">analytics</span><span class="text-[10px] uppercase font-bold">Rapor</span></button>
+       <button onclick="switchView('mentoring')" id="tab-mob-mentoring" class="nav-mobile mentoring-tab-btn hidden flex flex-col items-center gap-1 p-2 flex-1 text-gray-400 transition relative">
+    <span class="material-symbols-outlined text-2xl">forum</span>
+    <span class="text-[10px] uppercase font-bold">Chat</span>
+    <span id="notif-mob" class="hidden absolute top-2 right-4 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 border border-white"></span></span>
+</button>
+    </div>
+
+    <section id="learning-view" class="hidden fixed inset-0 bg-gray-50 z-[100] overflow-y-auto">
+        <nav class="p-4 border-b flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-md z-20">
+            <button onclick="closeLearningView()" class="text-gray-500 font-bold flex items-center gap-1"><span class="material-symbols-outlined">close</span> Tutup</button>
+            <div class="w-32 h-2 bg-gray-100 rounded-full overflow-hidden"><div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width:0%"></div></div>
+            <div class="w-20"></div>
+        </nav>
+        
+        <div class="max-w-6xl mx-auto p-4 md:p-10 pb-32">
+            <div id="material-area" class="w-full"></div>
+            
+            <div id="quiz-area" class="hidden text-center bg-white p-8 md:p-12 rounded-[2rem] border shadow-xl max-w-4xl mx-auto mt-10">
+                <h2 id="quiz-question" class="text-xl md:text-2xl font-bold mb-10 text-gray-800">...</h2>
+                <div id="quiz-options" class="grid gap-4 text-left max-w-2xl mx-auto"></div>
+                <div class="flex gap-4 mt-12 max-w-2xl mx-auto">
+                    <button id="btn-next-quiz" class="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">Selanjutnya</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 border-t flex gap-4 justify-center z-20">
+            <button id="prev-part" class="px-8 py-3 border border-gray-200 text-gray-500 rounded-xl font-bold hidden bg-white">⬅️ Sebelumnya</button>
+            <button id="next-part" class="px-10 py-3 bg-primary text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition">Selanjutnya ➡️</button>
+        </div>
+    </section>
+
+    <div id="auth-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center hidden p-4 transition-opacity" onclick="if(event.target === this) closeAuthModal()">
+        <div class="bg-white w-full max-w-md p-8 rounded-[2rem] shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeAuthModal()" class="absolute top-6 right-6 text-gray-400 font-bold text-xl hover:text-gray-700">×</button>
+            <h2 id="modal-title" class="font-headline text-2xl font-bold mb-1 text-center">Masuk SiRasa</h2>
+            
+            <form id="authForm" class="space-y-4 mt-6">
+                <div id="reg-fields" class="hidden space-y-4 transition-all">
+                    <input type="text" id="reg-nama" placeholder="Nama Lengkap" class="w-full p-4 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
+                    <input type="tel" id="reg-nohp" placeholder="WhatsApp (08...)" class="w-full p-4 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
+                    <div class="grid grid-cols-2 gap-3">
+                        <select id="reg-jk" class="w-full p-4 bg-gray-50 border rounded-xl outline-none text-sm text-gray-500 focus:border-primary">
+                            <option value="" disabled selected>Kelamin</option>
+                            <option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option>
+                        </select>
+                        <input type="date" id="reg-tgl-lahir" title="Tanggal Lahir" class="w-full p-4 bg-gray-50 border rounded-xl outline-none text-sm text-gray-500 focus:border-primary">
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 pb-6 z-[70] rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-            <button onclick="closeUserDashboard()" class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary p-2 flex-1 transition">
-                <span class="material-symbols-outlined text-2xl">arrow_back</span><span class="text-[10px] font-bold">Materi</span>
-            </button>
-            <button onclick="switchUserTab('rapor')" id="tab-rapor-mobile" class="tab-btn-mobile active flex flex-col items-center gap-1 text-gray-400 hover:text-primary p-2 flex-1 transition">
-                <span class="material-symbols-outlined text-2xl">emoji_events</span><span class="text-[10px] font-bold">Rapor</span>
-            </button>
-            <button onclick="switchUserTab('profil')" id="tab-profil-mobile" class="tab-btn-mobile flex flex-col items-center gap-1 text-gray-400 hover:text-primary p-2 flex-1 transition">
-                <span class="material-symbols-outlined text-2xl">manage_accounts</span><span class="text-[10px] font-bold">Profil</span>
-            </button>
-            <button onclick="switchUserTab('mentoring')" id="tab-mentoring-mobile" class="tab-btn-mobile mentoring-tab-btn flex flex-col items-center gap-1 text-gray-400 hover:text-primary p-2 flex-1 transition hidden">
-                <span class="material-symbols-outlined text-2xl">support_agent</span><span class="text-[10px] font-bold">Mentor</span>
-            </button>
-        </div>
-    </section>
-
-    <section id="learning-view" class="hidden fixed inset-0 bg-white z-[60] overflow-y-auto">
-        <nav class="p-4 border-b flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-md z-10">
-            <button onclick="closeLearningView()" class="flex items-center gap-1 text-gray-500 font-bold hover:text-red-500 transition"><span class="material-symbols-outlined">close</span> Tutup</button>
-            <div class="w-32 h-2 bg-gray-100 rounded-full overflow-hidden"><div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width:0%"></div></div>
-            <div class="w-20 flex justify-end"><div id="quiz-score-display" class="font-bold text-primary bg-blue-50 px-3 py-1 rounded-full text-xs hidden">0 Pts</div></div>
-        </nav>
-
-        <div class="max-w-4xl mx-auto p-4 md:p-8 pb-32">
-            <div id="material-area">
-                <div id="media-container" class="rounded-[2rem] overflow-hidden mb-6 border shadow-sm bg-gray-50"></div>
-                <h2 id="part-title" class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">...</h2>
-                <div id="part-body" class="text-gray-600 text-base md:text-lg leading-relaxed prose max-w-none"></div>
-            </div>
-
-            <div id="quiz-area" class="hidden text-center bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-inner">
-                <div id="quiz-navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
-                <h2 id="quiz-question" class="text-xl md:text-2xl font-bold mb-8 text-gray-800">...</h2>
-                <div id="quiz-options" class="grid gap-3 text-left"></div>
                 
-                <div class="flex gap-4 mt-8">
-                    <button id="btn-prev-quiz" onclick="navigateQuiz(-1)" class="flex-1 py-4 bg-white border border-gray-300 text-gray-600 rounded-xl font-bold transition hover:bg-gray-100 hidden">Sebelumnya</button>
-                    <button id="btn-next-quiz" onclick="navigateQuiz(1)" class="flex-[2] py-4 bg-primary text-white rounded-xl font-bold transition shadow-lg">Berikutnya</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t flex gap-4 justify-center">
-            <button id="prev-part" class="px-8 py-3 border border-gray-200 text-gray-500 rounded-xl font-bold transition hover:bg-gray-50">Kembali</button>
-            <button id="next-part" class="px-10 py-3 bg-primary text-white rounded-xl font-bold shadow-lg hover:scale-105 transition">Berikutnya</button>
-        </div>
-    </section>
-
-    <!-- MODAL AUTH -->
-    <div id="auth-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center hidden p-4">
-        <div class="bg-white w-full max-w-md p-8 rounded-[2rem] shadow-2xl relative">
-            <button onclick="closeAuthModal()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 text-xl font-bold">×</button>
-            <h2 id="modal-title" class="font-headline text-2xl font-bold mb-1">Masuk</h2>
-            <form id="authForm" class="space-y-4 mt-6">
-                <div id="reg-fields" class="hidden space-y-4 border-b border-gray-100 pb-4 mb-4">
-                    <input type="text" id="reg-nama" placeholder="Nama Lengkap" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
-                    <input type="tel" id="reg-nohp" placeholder="Nomor WA (Opsional)" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
-                    <input type="date" id="reg-tgl" placeholder="Tanggal Lahir" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm text-gray-500" />
-                    <select id="reg-jk" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm text-gray-500">
-                        <option value="" disabled selected>Pilih Jenis Kelamin</option>
-                        <option value="Laki-laki">Laki-laki</option>
-                        <option value="Perempuan">Perempuan</option>
-                    </select>
-                </div>
+                <input type="email" id="auth-email" placeholder="Email Akun" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
+                <input type="password" id="auth-pass" placeholder="Password" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none text-sm focus:border-primary">
                 
-                <input type="email" id="auth-email" placeholder="Email" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
-                <input type="password" id="auth-pass" placeholder="Password" required class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-primary text-sm" />
-                
-                <button type="submit" id="btn-auth" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-2 transition hover:bg-[#00478d]">Masuk Sekarang</button>
-                
-                <button type="button" onclick="loginWithGoogle()" class="w-full bg-white border border-gray-200 text-gray-600 font-bold py-3 rounded-xl flex items-center justify-center gap-3 text-sm hover:bg-gray-50 transition">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="w-5 h-5"/> Lanjutkan dengan Google
-                </button>
+                <button type="submit" id="btn-auth" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-2 transition hover:bg-blue-700">Masuk Sekarang</button>
             </form>
-            <button onclick="toggleAuthMode()" id="toggle-text" class="w-full mt-6 text-sm font-bold text-gray-400 hover:text-primary transition">Belum punya akun? Daftar Akun Baru</button>
+            
+            <button onclick="toggleAuthMode()" id="toggle-text" class="w-full mt-6 text-sm font-bold text-gray-400 hover:text-primary">Daftar Akun Baru</button>
+            
+            <div class="relative flex items-center justify-center mt-6 mb-4">
+                <span class="absolute bg-white px-3 text-xs font-bold text-gray-400 uppercase">Atau masuk dengan</span>
+                <div class="w-full border-t border-gray-100"></div>
+            </div>
+            <button type="button" onclick="loginWithGoogle()" class="w-full bg-white border-2 border-gray-100 text-gray-700 font-bold py-4 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-gray-50 transition">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google"> Google
+            </button>
         </div>
     </div>
 
-    <!-- MODAL CHAT MENTORING -->
-    <div id="chat-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center hidden p-4">
+    <div id="chat-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[120] flex items-center justify-center hidden p-4 transition-opacity" onclick="if(event.target === this) closeChat()">
         <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl relative flex flex-col h-[80vh]">
             <div class="p-6 border-b flex justify-between items-center bg-gray-50 rounded-t-[2rem]">
-                <h2 class="font-headline font-bold text-xl text-primary flex items-center gap-2"><span class="material-symbols-outlined">forum</span> Ruang Diskusi</h2>
-                <button onclick="closeChat()" class="text-gray-400 hover:text-red-500 font-bold text-xl transition">×</button>
+                <h2 class="font-headline font-bold text-xl text-primary flex items-center gap-2"><span class="material-symbols-outlined">forum</span> Diskusi</h2>
+                <button onclick="closeChat()" class="text-gray-400 font-bold text-2xl hover:text-gray-700">×</button>
             </div>
-            <div id="chat-box" class="flex-1 p-6 overflow-y-auto bg-gray-50/50 space-y-4 flex flex-col"></div>
-            <form id="chatForm" class="p-4 border-t bg-white rounded-b-[2rem] flex gap-2">
+            <div id="chat-box" class="flex-1 p-6 overflow-y-auto bg-white space-y-4 flex flex-col"></div>
+            <form id="chatForm" class="p-4 border-t flex gap-2 bg-gray-50 rounded-b-[2rem]">
                 <input type="hidden" id="active-chat-id">
-                <input type="text" id="chat-msg" required placeholder="Ketik pesan..." autocomplete="off" class="flex-1 p-3 bg-gray-100 border rounded-xl outline-none focus:border-primary text-sm">
-                <button type="submit" class="bg-primary text-white px-4 py-3 rounded-xl hover:bg-blue-800 transition flex items-center justify-center"><span class="material-symbols-outlined">send</span></button>
+                <input type="text" id="chat-msg" required placeholder="Tulis pesan..." autocomplete="off" class="flex-1 p-3.5 bg-white border rounded-xl outline-none text-sm focus:border-primary">
+                <button type="submit" class="bg-primary text-white px-5 rounded-xl shadow-md"><span class="material-symbols-outlined">send</span></button>
             </form>
         </div>
     </div>
 
-    <!-- SCRIPT & LOGIC -->
     <script>
-        let userData = null; let allModules = []; let currentModuleData = []; let currentPartIndex = 0; let activeModuleId = ""; 
-        let currentQuizzes = []; let currentQuizIndex = 0; let earnedPoints = 0; let userAnswers = {};
-        let myUserChart = null; let chatInterval = null;
+        let userData = null; let allModules = []; let currentModuleData = []; let currentPartIndex = -1; 
+        let activeModuleId = ""; let currentQuizzes = []; let currentQuizIndex = 0; 
+        let earnedPoints = 0; let userAnswers = {}; let chatInterval = null; let myUserChart = null;
+        let isTTSActive = true; 
 
         window.onload = async function() { 
+            await checkTTSConfig();
             const { data: { session } } = await supabaseClient.auth.getSession();
+            
             if(session) {
-                const { data: uData } = await supabaseClient.from('users').select('*').eq('email', session.user.email);
-                if(uData && uData.length > 0) {
-                    userData = uData[0];
-                    localStorage.setItem('healthlearn_user', JSON.stringify(userData));
-                } else {
-                    const { data: newU } = await supabaseClient.from('users').insert([{
-                        nama_lengkap: session.user.user_metadata.full_name || 'User Google',
-                        email: session.user.email, password_hash: 'GOOGLE_AUTH', role: 'user', total_points: 0
-                    }]).select('*');
-                    userData = newU[0];
-                    localStorage.setItem('healthlearn_user', JSON.stringify(userData));
+                let { data: uData } = await supabaseClient.from('users').select('*').eq('email', session.user.email);
+                if(!uData || uData.length === 0) {
+                    const newUser = { nama_lengkap: session.user.user_metadata.full_name || session.user.email.split('@')[0], email: session.user.email, role: 'user', total_points: 0 };
+                    await supabaseClient.from('users').insert([newUser]);
+                    const { data: freshData } = await supabaseClient.from('users').select('*').eq('email', session.user.email);
+                    uData = freshData;
                 }
+                if(uData?.length) { userData = uData[0]; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); }
             } else if(localStorage.getItem('healthlearn_user')) { 
                 const localData = JSON.parse(localStorage.getItem('healthlearn_user')); 
-                const { data: freshData } = await supabaseClient.from('users').select('*').eq('id', localData.id);
-                if(freshData && freshData.length > 0) {
-                    userData = freshData[0];
-                    localStorage.setItem('healthlearn_user', JSON.stringify(userData));
-                }
+                const { data: fresh } = await supabaseClient.from('users').select('*').eq('id', localData.id);
+                if(fresh?.length) { userData = fresh[0]; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); } 
+                else { localStorage.removeItem('healthlearn_user'); userData = null; }
             } 
-            
-            if(userData) updateUIForUser();
-            loadModules(); 
-            checkMentorStatus();
+            updateUIForUser(); loadModules(); checkMentorStatus();setInterval(checkUserNotif, 5000);
         };
 
-        async function checkMentorStatus() {
-            const { data } = await supabaseClient.from('users').select('id').eq('role', 'admin').eq('mentor_active', true);
-            const mentorTabs = document.querySelectorAll('.mentoring-tab-btn');
-            if(data && data.length > 0) {
-                mentorTabs.forEach(t => t.classList.remove('hidden'));
-            } else {
-                mentorTabs.forEach(t => t.classList.add('hidden'));
-                if(!document.getElementById('content-mentoring').classList.contains('hidden')) { switchUserTab('rapor'); }
+        // TTS & UI Init
+        async function checkTTSConfig() {
+            try { const { data } = await supabaseClient.from('app_configs').select('value').eq('key', 'tts_enabled').single(); if (data) isTTSActive = (data.value === 'true'); } catch (e) { console.warn(e); }
+        }
+
+        function updateUIForUser() { 
+            const isLogin = (userData !== null);
+            document.getElementById('desktop-tabs').classList.remove('hidden');
+            const dr = document.getElementById('tab-desk-rapor'); if(dr) dr.classList.toggle('hidden', !isLogin);
+            
+            document.getElementById('mobile-nav').classList.remove('hidden');
+            const mr = document.getElementById('tab-mob-rapor'); if(mr) mr.classList.toggle('hidden', !isLogin);
+            
+            document.getElementById('btn-login-menu').classList.toggle('hidden', isLogin);
+            document.getElementById('btn-profil-menu').classList.toggle('hidden', !isLogin);
+            document.getElementById('btn-logout-menu').classList.toggle('hidden', !isLogin);
+            document.getElementById('user-status-text').innerText = isLogin ? userData.nama_lengkap.split(' ')[0] : 'Tamu';
+            document.getElementById('user-points-text').innerText = isLogin ? (userData.total_points || 0) + " Pts" : '';
+            if(isLogin && userData.role === 'admin') { const ad = document.getElementById('admin-dropdown-btn'); if(ad) ad.classList.remove('hidden'); }
+        }
+
+        // View Navigation
+        function switchView(viewName) {
+            if(!userData && viewName !== 'beranda') { openAuthModal(); return; }
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-' + viewName).classList.remove('hidden');
+            window.scrollTo(0,0);
+            document.querySelectorAll('.nav-desktop, .nav-mobile').forEach(b => b.classList.remove('active', 'text-primary'));
+            const dBtn = document.getElementById('tab-desk-' + viewName); if(dBtn) dBtn.classList.add('active');
+            const mBtn = document.getElementById('tab-mob-' + viewName); if(mBtn) mBtn.classList.add('active', 'text-primary');
+            document.getElementById('profile-dropdown').classList.add('hidden');
+            if(viewName === 'rapor') loadUserChart();
+            if(viewName === 'profil') { document.getElementById('ep-nama').value = userData.nama_lengkap; document.getElementById('ep-nohp').value = userData.nomor_hp || ''; document.getElementById('ep-email').value = userData.email; }
+            if(viewName === 'mentoring') {
+                loadMentoring(); const sel = document.getElementById('m-module');
+                sel.innerHTML = '<option value="" disabled selected>Pilih Topik...</option><option value="Umum">Umum</option>';
+                allModules.forEach(mod => sel.innerHTML += `<option value="${mod.title}">${mod.title}</option>`);
             }
         }
 
-        async function loginWithGoogle() {
-            alert("Fitur Login Google sedang disiapkan oleh Administrator. Silakan daftar dan masuk menggunakan Email manual.");
-        }
-
+        // Auth
         function toggleAuthMode() { 
             const regFields = document.getElementById('reg-fields');
-            regFields.classList.toggle('hidden'); 
-            const isReg = !regFields.classList.contains('hidden'); 
-            
-            document.getElementById('reg-tgl').required = isReg;
-            document.getElementById('modal-title').innerText = isReg ? 'Daftar Akun Baru' : 'Masuk'; 
-            document.getElementById('btn-auth').innerText = isReg ? 'Buat Akun' : 'Masuk Sekarang'; 
-            document.getElementById('toggle-text').innerText = isReg ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar Akun Baru'; 
+            const isReg = !regFields.classList.toggle('hidden'); 
+            document.getElementById('modal-title').innerText = isReg ? 'Daftar SiRasa' : 'Masuk SiRasa'; 
+            document.getElementById('btn-auth').innerText = isReg ? 'Buat Akun' : 'Masuk Sekarang';
+            document.getElementById('toggle-text').innerText = isReg ? 'Sudah punya akun? Masuk' : 'Daftar Akun Baru';
+            document.getElementById('auth-pass').value = '';
         }
-
-        function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
-        
-        function closeAuthModal() { 
-            document.getElementById('auth-modal').classList.add('hidden'); 
+        function openAuthModal() { 
+            document.getElementById('auth-modal').classList.remove('hidden'); 
             document.getElementById('reg-fields').classList.add('hidden');
-            document.getElementById('reg-tgl').required = false;
-            document.getElementById('modal-title').innerText = 'Masuk'; 
-            document.getElementById('btn-auth').innerText = 'Masuk Sekarang'; 
-            document.getElementById('toggle-text').innerText = 'Belum punya akun? Daftar Akun Baru';
-            document.getElementById('authForm').reset();
+            document.getElementById('modal-title').innerText = 'Masuk SiRasa';
+            document.getElementById('btn-auth').innerText = 'Masuk Sekarang';
+            document.getElementById('toggle-text').innerText = 'Daftar Akun Baru';
         }
+        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+        async function loginWithGoogle() { const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } }); if(error) alert("Gagal: " + error.message); }
+        async function logout() { await supabaseClient.auth.signOut(); localStorage.removeItem('healthlearn_user'); location.reload(); }
+        function toggleProfileMenu(e) { e.stopPropagation(); document.getElementById('profile-dropdown').classList.toggle('hidden'); }
+        window.onclick = () => document.getElementById('profile-dropdown').classList.add('hidden');
 
         document.getElementById('authForm').onsubmit = async (e) => {
             e.preventDefault(); 
-            const isReg = !document.getElementById('reg-fields').classList.contains('hidden'); 
-            const btn = document.getElementById('btn-auth'); btn.innerText = "Memproses..."; btn.disabled = true;
-            
-            const email = document.getElementById('auth-email').value;
+            const isReg = !document.getElementById('reg-fields').classList.contains('hidden');
+            const btn = document.getElementById('btn-auth'); 
+            const email = document.getElementById('auth-email').value; 
             const pass = document.getElementById('auth-pass').value;
 
-            if(isReg) { 
-                const nama = document.getElementById('reg-nama').value;
-                const nohp = document.getElementById('reg-nohp').value;
-                const tgl = document.getElementById('reg-tgl').value;
-                const jk = document.getElementById('reg-jk').value;
-                
-                if(!jk) { alert("Pilih jenis kelamin terlebih dahulu."); btn.disabled = false; btn.innerText = "Buat Akun"; return; }
-
-                const { data: check } = await supabaseClient.from('users').select('id').eq('email', email);
-                if(check.length > 0) { alert('Email sudah terdaftar.'); btn.innerText = "Buat Akun"; btn.disabled = false; return; }
-                
+            if(isReg) {
+                btn.innerText = "Membuat Akun...";
                 const { error } = await supabaseClient.from('users').insert([{ 
-                    nama_lengkap: nama, email: email, nomor_hp: nohp, tanggal_lahir: tgl, jenis_kelamin: jk, password_hash: pass, role: 'user', total_points: 0 
+                    nama_lengkap: document.getElementById('reg-nama').value, email, nomor_hp: document.getElementById('reg-nohp').value, 
+                    jenis_kelamin: document.getElementById('reg-jk').value, tanggal_lahir: document.getElementById('reg-tgl-lahir').value, password_hash: pass, role: 'user', total_points: 0 
                 }]);
-                
-                btn.disabled = false;
-                if(!error) { alert("Pendaftaran Berhasil! Silakan Masuk."); toggleAuthMode(); } else { alert("Gagal daftar: " + error.message); btn.innerText = "Buat Akun"; }
-            } else { 
-                const { data, error } = await supabaseClient.from('users').select('*').eq('email', email).eq('password_hash', pass);
-                btn.disabled = false;
-                if(data && data.length > 0){ 
-                    userData = data[0]; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
-                    closeAuthModal(); updateUIForUser(); document.getElementById('authForm').reset();
-                } else { alert("Email atau Password salah."); btn.innerText = "Masuk Sekarang"; } 
+                if(!error) { alert("Sukses! Silakan Masuk."); toggleAuthMode(); } else { alert("Gagal. Email mungkin sudah terdaftar."); btn.innerText = "Buat Akun"; }
+            } else {
+                btn.innerText = "Memeriksa...";
+                const { data } = await supabaseClient.from('users').select('*').eq('email', email).eq('password_hash', pass);
+                if(data?.length) { userData = data[0]; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); location.reload(); } 
+                else { alert("Data tidak cocok."); btn.innerText = "Masuk Sekarang"; }
             }
         };
 
-        function updateUIForUser() { 
-            document.getElementById('greeting-text').innerText = `Halo ${userData.nama_lengkap.split(' ')[0]}! 🌟`; 
-            document.getElementById('user-status-text').innerText = userData.nama_lengkap.split(' ')[0]; 
-            document.getElementById('user-points-text').innerText = userData.total_points + " Pts"; 
-            document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${userData.nama_lengkap}&background=005a9c&color=fff`;
-            
-            document.getElementById('btn-login-menu').classList.add('hidden');
-            document.getElementById('btn-profil-menu').classList.remove('hidden');
-            document.getElementById('btn-logout-menu').classList.remove('hidden');
-            if(userData.role === 'admin') document.getElementById('admin-dropdown-btn').classList.remove('hidden'); 
-        }
-
-        function toggleProfileMenu(e) { e.stopPropagation(); document.getElementById('profile-dropdown').classList.toggle('hidden'); }
-        
-        async function logout() { 
-            if(confirm('Apakah Anda yakin ingin keluar?')) {
-                await supabaseClient.auth.signOut();
-                localStorage.removeItem('healthlearn_user'); userData = null;
-                document.getElementById('profile-dropdown').classList.add('hidden');
-                document.getElementById('user-status-text').innerText = 'Masuk';
-                document.getElementById('user-points-text').innerText = '0 Pts';
-                document.getElementById('user-avatar').src = 'https://ui-avatars.com/api/?name=Guest';
-                document.getElementById('greeting-text').innerText = 'Halo! Siap Belajar? 🚀';
-                
-                document.getElementById('btn-login-menu').classList.remove('hidden');
-                document.getElementById('btn-profil-menu').classList.add('hidden');
-                document.getElementById('btn-logout-menu').classList.add('hidden');
-                document.getElementById('admin-dropdown-btn').classList.add('hidden');
-                closeUserDashboard();
-            }
-        }
-        window.onclick = () => document.getElementById('profile-dropdown').classList.add('hidden');
-
-        async function openUserDashboard() {
-            if(!userData) return openAuthModal();
-            document.getElementById('main-view').classList.add('hidden');
-            document.getElementById('main-mobile-nav').classList.add('hidden');
-            document.getElementById('user-dashboard-view').classList.remove('hidden');
-            document.getElementById('profile-dropdown').classList.add('hidden');
-            
-            const { data: freshData } = await supabaseClient.from('users').select('total_points').eq('id', userData.id);
-            if(freshData && freshData.length > 0) userData.total_points = freshData[0].total_points;
-
-            document.getElementById('ep-nama').value = userData.nama_lengkap;
-            document.getElementById('ep-nohp').value = userData.nomor_hp || '';
-            document.getElementById('ep-email').value = userData.email;
-            document.getElementById('user-dashboard-points').innerText = `${userData.total_points} Poin Total`;
-            document.getElementById('user-points-text').innerText = userData.total_points + " Pts";
-
-            const p = userData.total_points;
-            let badge = '🌱', text = 'Health Beginner';
-            if(p >= 100 && p < 300) { badge = '🥉'; text = 'Bronze Explorer'; }
-            else if(p >= 300 && p < 600) { badge = '🥈'; text = 'Silver Scholar'; }
-            else if(p >= 600) { badge = '🥇'; text = 'Gold Champion'; }
-            document.getElementById('reward-badge').innerText = badge; document.getElementById('reward-text').innerText = text;
-            
-            loadUserChart();
-        }
-
-        function closeUserDashboard() { 
-            document.getElementById('user-dashboard-view').classList.add('hidden'); 
-            document.getElementById('main-view').classList.remove('hidden'); 
-            document.getElementById('main-mobile-nav').classList.remove('hidden');
-        }
-
-        function switchUserTab(tab) {
-            document.querySelectorAll('.tab-btn-desktop').forEach(b => b.classList.remove('active', 'border-l-4'));
-            document.querySelectorAll('.tab-btn-mobile').forEach(b => b.classList.remove('active', 'text-primary'));
-            const desktopTab = document.getElementById('tab-' + tab + '-desktop'); if(desktopTab) desktopTab.classList.add('active', 'border-l-4');
-            const mobileTab = document.getElementById('tab-' + tab + '-mobile'); if(mobileTab) mobileTab.classList.add('active', 'text-primary');
-
-            document.querySelectorAll('.user-tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById('content-' + tab).classList.remove('hidden');
-            
-            if(tab === 'rapor') loadUserChart();
-            if(tab === 'mentoring') {
-                loadMentoring();
-                const sel = document.getElementById('m-module');
-                sel.innerHTML = '<option value="" disabled selected>Pilih Modul yang Ingin Didiskusikan...</option>';
-                allModules.forEach(m => sel.innerHTML += `<option value="${m.title}">${m.title}</option>`);
-            }
-        }
-
-        async function loadUserChart() {
-            const { data, error } = await supabaseClient.from('user_progress').select('score, modules(title)').eq('user_id', userData.id);
-            if(error || !data || data.length === 0) return;
-
-            const ctx = document.getElementById('userProgressChart').getContext('2d');
-            if(myUserChart) myUserChart.destroy();
-            let gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(0, 90, 156, 0.6)'); gradient.addColorStop(1, 'rgba(0, 90, 156, 0.05)');
-            myUserChart = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: data.map(d => d.modules ? d.modules.title.substring(0,10)+'...' : 'Terhapus'), datasets: [{ label: 'Skor Kuis', data: data.map(d => d.score), backgroundColor: gradient, borderRadius: 8 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
-            });
-        }
-
-        document.getElementById('editProfilForm').onsubmit = async (e) => {
-            e.preventDefault(); const btn = document.getElementById('btn-ep-save'); btn.innerText = "Menyimpan...";
-            const payload = { nama_lengkap: document.getElementById('ep-nama').value, nomor_hp: document.getElementById('ep-nohp').value };
-            const { error } = await supabaseClient.from('users').update(payload).eq('id', userData.id);
-            btn.innerText = "Update Profil";
-            if(!error) {
-                userData.nama_lengkap = payload.nama_lengkap; userData.nomor_hp = payload.nomor_hp;
-                localStorage.setItem('healthlearn_user', JSON.stringify(userData)); updateUIForUser(); alert('Profil berhasil diperbarui!');
-            } else alert('Gagal update.');
-        };
-
+        // Mentoring
+        async function checkMentorStatus() { const { data } = await supabaseClient.from('users').select('id').eq('role', 'admin').eq('mentor_active', true); if(data?.length) document.querySelectorAll('.mentoring-tab-btn').forEach(t => t.classList.remove('hidden')); }
         async function loadMentoring() {
-            const { data } = await supabaseClient.from('mentoring').select('*').eq('user_id', userData.id).order('schedule', { ascending: true });
+            const { data } = await supabaseClient.from('mentoring').select('*').eq('user_id', userData.id).order('created_at', { ascending: false });
             const list = document.getElementById('mentoring-list'); list.innerHTML = '';
-            if(!data || data.length === 0) { list.innerHTML = '<p class="text-sm text-gray-400">Belum ada jadwal diajukan.</p>'; return; }
-            data.forEach(d => list.innerHTML += `
-                <div class="p-4 border rounded-xl bg-gray-50 flex justify-between items-center gap-4">
-                    <div class="flex-1">
-                        <span class="text-[10px] font-black uppercase text-primary bg-blue-100 px-2 py-0.5 rounded">${d.module_title || 'Umum'}</span>
-                        <p class="font-bold text-sm text-gray-800 mt-1">${d.topic}</p>
-                        <p class="text-xs text-gray-500">${new Date(d.schedule).toLocaleString()}</p>
-                    </div>
-                    <div class="flex flex-col items-end gap-2">
-                        <span class="text-[10px] font-black uppercase px-3 py-1 rounded-md ${d.status==='pending'?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600'}">${d.status}</span>
-                        <button onclick="openChat('${d.id}')" class="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-800 transition flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">forum</span> Chat</button>
-                    </div>
-                </div>`);
+            data?.forEach(d => list.innerHTML += `<div class="p-5 border border-gray-100 rounded-2xl bg-white shadow-sm flex justify-between items-center"><div><p class="font-bold text-gray-800">${d.topic}</p><p class="text-xs text-gray-400 mt-1">${new Date(d.schedule).toLocaleString()}</p></div><button onclick="openChat('${d.id}')" class="bg-primary text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md hover:bg-blue-700">Chat</button></div>`);
         }
-        
         document.getElementById('mentoringForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const modTitle = document.getElementById('m-module').value;
-            const { error } = await supabaseClient.from('mentoring').insert([{ user_id: userData.id, module_title: modTitle, topic: document.getElementById('m-topic').value, schedule: document.getElementById('m-date').value }]);
-            if(!error) { alert('Jadwal diajukan!'); document.getElementById('mentoringForm').reset(); loadMentoring(); }
-        };
-
-        // --- SISTEM CHAT MENTORING ---
-        function openChat(mentoringId) {
-            document.getElementById('chat-modal').classList.remove('hidden');
-            document.getElementById('active-chat-id').value = mentoringId;
-            loadChat(mentoringId);
-            chatInterval = setInterval(() => loadChat(mentoringId), 3000);
-        }
+    e.preventDefault();
+    const { error } = await supabaseClient.from('mentoring').insert([{ 
+        user_id: userData.id, 
+        topic: document.getElementById('m-topic').value, 
+        module_title: document.getElementById('m-module').value, 
+        is_anonymous: document.getElementById('m-anonim').checked, 
+        status: 'pending' 
+    }]);
+    if(!error) { alert("Pertanyaan terkirim!"); location.reload(); }
+};
+        // Chat
+        function openChat(id) { document.getElementById('chat-modal').classList.remove('hidden'); document.getElementById('active-chat-id').value = id; loadChat(id); chatInterval = setInterval(() => loadChat(id), 3000); }
         function closeChat() { document.getElementById('chat-modal').classList.add('hidden'); clearInterval(chatInterval); }
-        
-        async function loadChat(mentoringId) {
-            const { data } = await supabaseClient.from('mentoring_chats').select('*').eq('mentoring_id', mentoringId).order('created_at', { ascending: true });
-            const box = document.getElementById('chat-box');
-            const atBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 50; 
-            box.innerHTML = '';
-            if(!data || data.length === 0) { box.innerHTML = '<p class="text-center text-gray-400 text-sm mt-10">Mulai percakapan...</p>'; return; }
-            
-            data.forEach(c => {
-                const isMe = c.sender_id === userData.id;
-                box.innerHTML += `
-                    <div class="max-w-[80%] p-3 rounded-2xl text-sm ${isMe ? 'bg-primary text-white self-end rounded-br-sm' : 'bg-white border text-gray-800 self-start rounded-bl-sm'} shadow-sm">
-                        <p class="font-bold text-[10px] opacity-70 mb-1">${c.sender_name}</p>
-                        <p>${c.message}</p>
-                    </div>`;
-            });
-            if(atBottom) box.scrollTop = box.scrollHeight;
+        async function loadChat(id) {
+            const { data } = await supabaseClient.from('mentoring_chats').select('*').eq('mentoring_id', id).order('created_at', { ascending: true });
+            const box = document.getElementById('chat-box'); box.innerHTML = '';
+            data?.forEach(c => { const isMe = c.sender_id === userData.id; box.innerHTML += `<div class="max-w-[85%] p-3 rounded-2xl text-sm ${isMe ? 'bg-primary text-white self-end rounded-tr-sm' : 'bg-gray-100 text-gray-800 self-start rounded-tl-sm'} shadow-sm"><p class="font-black text-[9px] uppercase mb-1 opacity-70">${c.sender_name}</p><p>${c.message}</p></div>`; });
+            box.scrollTop = box.scrollHeight;
         }
+        document.getElementById('chatForm').onsubmit = async (e) => { e.preventDefault(); const msg = document.getElementById('chat-msg').value; const id = document.getElementById('active-chat-id').value; document.getElementById('chat-msg').value = ''; await supabaseClient.from('mentoring_chats').insert([{ mentoring_id: id, sender_id: userData.id, sender_name: userData.nama_lengkap, message: msg }]); loadChat(id); };
+async function checkUserNotif() {
+    if(!userData) return;
+    // Cek apakah ada sesi chat yang sedang aktif/dibalas admin
+    const { data } = await supabaseClient.from('mentoring').select('id').eq('user_id', userData.id).eq('status', 'active');
+    const hasNotif = data && data.length > 0;
 
-        document.getElementById('chatForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const msgInput = document.getElementById('chat-msg'); const msg = msgInput.value; const mentoringId = document.getElementById('active-chat-id').value;
-            msgInput.value = '';
-            await supabaseClient.from('mentoring_chats').insert([{ mentoring_id: mentoringId, sender_id: userData.id, sender_name: userData.nama_lengkap, message: msg }]);
-            loadChat(mentoringId);
-        };
-
-        // --- MODULE & LEARNING ---
+    const deskNotif = document.getElementById('notif-desk');
+    const mobNotif = document.getElementById('notif-mob');
+    if(deskNotif) deskNotif.classList.toggle('hidden', !hasNotif);
+    if(mobNotif) mobNotif.classList.toggle('hidden', !hasNotif);
+}
+        // Modules & Learning
         async function loadModules() { 
-            const { data, error } = await supabaseClient.from('modules').select('*').order('created_at', { ascending: false });
-            if(data) { allModules = data; renderModules(data); }
-        }
-        
-        function renderModules(data) {
-            const c = document.getElementById('course-container'); c.innerHTML = '';
-            if(!data || data.length===0) return c.innerHTML='<div class="col-span-full py-10 text-center font-bold text-gray-400">Belum ada modul yang diterbitkan.</div>';
-            data.forEach(m => { 
-                c.innerHTML += `<div class="bg-white rounded-[2rem] overflow-hidden border shadow-sm cursor-pointer hover:shadow-xl transition-all group flex flex-col" onclick="checkAccess('user', '${m.id}', '${m.title.replace(/'/g, "\\'")}')">
-                    <img src="${m.media_url}" onerror="this.src='https://images.unsplash.com/photo-1505751172107'" class="h-44 w-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div class="p-6 flex flex-col flex-grow">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-primary mb-2">${m.category}</span>
-                        <h3 class="font-bold text-lg text-gray-800 mb-2 leading-tight">${m.title}</h3>
-                        <p class="text-sm text-gray-500 line-clamp-2 mb-6 flex-grow">${m.summary}</p>
-                        <button class="w-full py-3.5 bg-secondary text-primary font-bold rounded-xl group-hover:bg-primary group-hover:text-white transition">Pelajari Modul</button>
-                    </div>
-                </div>`; 
-            });
+            const { data } = await supabaseClient.from('modules').select('*').order('created_at', { ascending: false });
+            if(data) { allModules = data; const c = document.getElementById('course-container'); c.innerHTML = ''; data.forEach(m => c.innerHTML += `<div class="bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:shadow-lg transition flex flex-col" onclick="checkAccess('user', '${m.id}', '${m.title}')"><img src="${m.media_url}" class="h-44 w-full object-cover"><div class="p-6 flex flex-col flex-grow"><span class="text-[10px] font-black uppercase text-primary mb-2">${m.category}</span><h3 class="font-bold text-gray-800 line-clamp-2 text-lg">${m.title}</h3><button class="w-full mt-4 py-3 bg-blue-50 text-primary font-bold rounded-xl transition hover:bg-primary hover:text-white">Mulai Belajar</button></div></div>`); } 
         }
 
         async function checkAccess(page, id, title) {
-            if(!userData) return openAuthModal();
-            if(page === 'admin') { window.location.href = "admin.html"; } 
-            else { 
-                activeModuleId = id; activeModuleTitle = title;
-                document.getElementById('learning-view').classList.remove('hidden'); 
-                document.getElementById('material-area').classList.remove('hidden'); 
-                document.getElementById('quiz-area').classList.add('hidden'); 
-                document.getElementById('bottom-nav').classList.remove('hidden'); 
-                document.getElementById('main-mobile-nav').classList.add('hidden');
-                document.body.style.overflow = 'hidden'; 
-                
-                const { data } = await supabaseClient.from('module_contents').select('*').eq('module_id', id).order('order_index', { ascending: true });
-                currentModuleData = data || []; currentPartIndex = 0; renderPart(); 
-            }
+            if(!userData) { openAuthModal(); return; }
+            activeModuleId = id; document.getElementById('learning-view').classList.remove('hidden'); document.body.style.overflow = 'hidden'; 
+            const { data } = await supabaseClient.from('module_contents').select('*').eq('module_id', id).order('order_index', { ascending: true }); 
+            currentModuleData = data || []; currentPartIndex = -1; renderPart(); 
         }
 
         function renderPart() {
-            if(!currentModuleData || currentModuleData.length === 0) return alert("Modul belum ada materi.");
-            const p = currentModuleData[currentPartIndex];
-            document.getElementById('progress-bar').style.width = ((currentPartIndex + 1) / currentModuleData.length * 100) + "%";
-            document.getElementById('part-title').innerText = p.title; 
-            document.getElementById('part-body').innerHTML = p.content_data;
-            
-            const mb = document.getElementById('media-container'); mb.innerHTML = '';
-            if(p.content_type === 'youtube') { 
-                mb.classList.remove('hidden'); mb.classList.add('aspect-video'); 
-                mb.innerHTML = `<iframe class="w-full h-full" src="${p.content_data}" frameborder="0" allowfullscreen></iframe>`; 
-            } 
-            else if(p.content_type === 'pdf') { 
-                mb.classList.remove('hidden', 'aspect-video'); mb.classList.add('aspect-[3/4]'); 
-                mb.innerHTML = `<iframe src="${p.content_data}" class="w-full h-full bg-white"></iframe>`; 
-            }
-            else { mb.classList.add('hidden'); }
+            if(!currentModuleData.length) return alert("Kosong.");
+            const area = document.getElementById('material-area');
+            area.classList.remove('page-flip-curl', 'flipping', 'book-flip-in', 'book-flip-out'); void area.offsetWidth; area.classList.add('book-flip-in'); area.innerHTML = '';
 
-            document.getElementById('prev-part').disabled = (currentPartIndex === 0);
-            document.getElementById('prev-part').onclick = () => { currentPartIndex--; renderPart(); };
-            
-            const nextBtn = document.getElementById('next-part');
-            if(currentPartIndex === currentModuleData.length - 1) { 
-                nextBtn.innerText = "Mulai Kuis 🏆"; 
-                nextBtn.classList.replace('bg-primary', 'bg-orange-500');
-                nextBtn.onclick = startQuiz; 
-            } else { 
-                nextBtn.innerText = "Berikutnya"; 
-                nextBtn.classList.replace('bg-orange-500', 'bg-primary');
-                nextBtn.onclick = () => { currentPartIndex++; renderPart(); }; 
+            const bookContainer = document.createElement('div'); bookContainer.className = "responsive-book-area"; area.appendChild(bookContainer);
+            const gutter = document.createElement('div'); gutter.className = "book-gutter hidden md:block"; bookContainer.appendChild(gutter);
+            const contentWrapper = document.createElement('div'); contentWrapper.className = "material-content-wrapper flex flex-col"; bookContainer.appendChild(contentWrapper);
+
+            const mediaContainer = document.createElement('div'); mediaContainer.id = "media-container";
+            const partTitle = document.createElement('h2'); partTitle.id = "part-title"; partTitle.className = "text-3xl font-black text-gray-800 mb-8 border-l-4 border-primary pl-4";
+            const partBody = document.createElement('div'); partBody.id = "part-body"; partBody.className = "text-gray-700 text-lg leading-relaxed prose max-w-none md:columns-2 md:gap-16";
+            contentWrapper.appendChild(mediaContainer); contentWrapper.appendChild(partTitle); contentWrapper.appendChild(partBody);
+
+            const prevBtn = document.getElementById('prev-part'); const nextBtn = document.getElementById('next-part');
+
+            if (currentPartIndex === -1) {
+                const modData = allModules.find(m => m.id === activeModuleId);
+                document.getElementById('progress-bar').style.width = "0%";
+                mediaContainer.className = "relative w-full h-[50vh] md:h-[60vh] bg-gray-900 rounded-2xl overflow-hidden shadow-xl flex items-center justify-center p-8 mb-8 border-4 border-gray-800";
+                mediaContainer.innerHTML = `<img src="${modData.media_url || 'https://images.unsplash.com/photo-1505751172107'}" class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay"><div class="absolute top-0 left-0 w-4 h-full bg-black/30 border-r border-white/10 shadow-[inset_5px_0_10px_rgba(0,0,0,0.5)]"></div><div class="relative z-10 text-center flex flex-col items-center"><span class="bg-primary text-white text-xs font-black px-3 py-1.5 rounded-lg uppercase tracking-widest">${modData.category || 'Edukasi'}</span><h1 class="text-white text-4xl md:text-5xl font-black mt-6 mb-4 drop-shadow-xl leading-tight px-4">${modData.title}</h1><p class="text-gray-200 text-sm md:text-base max-w-sm font-medium opacity-90">${modData.summary || 'Pelajari modul ini dengan saksama.'}</p></div>`;
+                partTitle.className = "hidden"; partBody.innerHTML = "<p class='text-center text-gray-400 mt-12 font-bold'>Silakan buka buku untuk mulai belajar.</p>";
+                const btnVoice = document.getElementById('btn-voice-reader'); if(btnVoice) btnVoice.remove();
+                prevBtn.classList.add('hidden'); nextBtn.innerHTML = "Buka Buku (Flip) 📖"; nextBtn.onclick = animateAndGoNext;
+                return;
             }
+
+            const p = currentModuleData[currentPartIndex]; document.getElementById('progress-bar').style.width = ((currentPartIndex + 1) / currentModuleData.length * 100) + "%";
+            mediaContainer.innerHTML = '';
+            // Di dalam renderPart(), ubah blok logika ini:
+if(p.content_type === 'youtube') { 
+    mediaContainer.className = "rounded-xl overflow-hidden mb-8 border shadow-sm aspect-video"; 
+    mediaContainer.innerHTML = `<iframe class="w-full h-full" src="${p.content_data}" frameborder="0" allowfullscreen></iframe>`; 
+} 
+else if(p.content_type === 'pdf') { 
+    mediaContainer.className = "rounded-xl overflow-hidden mb-8 border shadow-sm h-[70vh]"; 
+    mediaContainer.innerHTML = `<iframe src="${p.content_data}" class="w-full h-full bg-gray-100"></iframe>`; 
+}
+else if(p.content_type === 'ppt') { 
+    mediaContainer.className = "rounded-xl overflow-hidden mb-8 border shadow-sm aspect-video"; 
+    mediaContainer.innerHTML = `<iframe src="${p.content_data.includes('http') ? p.content_data : 'https://view.officeapps.live.com/op/embed.aspx?src='+encodeURIComponent(p.content_data)}" class="w-full h-full" frameborder="0"></iframe>`; 
+}
+else if(p.content_type === 'embed') { 
+    // Logika render baru untuk Media Interaktif / Game Eksternal
+    mediaContainer.className = "rounded-xl overflow-hidden mb-8 border shadow-sm aspect-[4/3] md:aspect-video w-full bg-gray-50"; 
+    mediaContainer.innerHTML = `<iframe src="${p.content_data}" class="w-full h-full" frameborder="0" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>`; 
+}
+else { 
+    mediaContainer.className = 'hidden'; 
+}
+            partTitle.innerText = p.title; partBody.innerHTML = p.content_data;
+
+            const oldBtn = document.getElementById('btn-voice-reader'); if (oldBtn) oldBtn.remove();
+            if (p.content_type === 'article' && isTTSActive) {
+                const btnVoice = document.createElement('button'); btnVoice.id = 'btn-voice-reader'; btnVoice.innerHTML = '<span class="material-symbols-outlined align-middle mr-2">record_voice_over</span> Dengarkan Materi'; btnVoice.className = 'mb-8 px-5 py-3 bg-blue-50 text-primary font-bold rounded-xl text-sm flex items-center hover:bg-blue-100 transition shadow-sm'; btnVoice.onclick = () => toggleVoiceReader(p.content_data); partBody.parentNode.insertBefore(btnVoice, partBody);
+            } else { if(window.responsiveVoice) responsiveVoice.cancel(); }
+
+            prevBtn.classList.remove('hidden'); prevBtn.innerText = "⬅️ Sebelumnya"; prevBtn.onclick = animateAndGoPrev;
+            if(currentPartIndex === currentModuleData.length - 1) { nextBtn.innerHTML = "Selesai & Ujian 📝"; nextBtn.onclick = () => { if(window.responsiveVoice) responsiveVoice.cancel(); startQuiz(); }; } 
+            else { nextBtn.innerHTML = "Selanjutnya (Flip) ➡️"; nextBtn.onclick = animateAndGoNext; }
             document.getElementById('learning-view').scrollTo(0,0);
         }
 
-        // --- KUIS DINAMIS ---
+        function animateAndGoNext() { if(window.responsiveVoice) responsiveVoice.cancel(); const area = document.getElementById('material-area'); area.classList.add('book-flip-out', 'page-flip-curl'); void area.offsetWidth; area.classList.add('flipping'); setTimeout(() => { currentPartIndex++; renderPart(); }, 450); }
+        function animateAndGoPrev() { if(window.responsiveVoice) responsiveVoice.cancel(); const area = document.getElementById('material-area'); area.classList.add('book-flip-out', 'page-flip-curl'); void area.offsetWidth; area.classList.add('flipping'); setTimeout(() => { currentPartIndex--; renderPart(); }, 450); }
+
+        function toggleVoiceReader(text) {
+            const btnVoice = document.getElementById('btn-voice-reader');
+            if (responsiveVoice.isPlaying()) { responsiveVoice.cancel(); resetVoiceUI(btnVoice); return; }
+            const cleanText = text.replace(/<[^>]+>/g, '').trim(); if (!cleanText) return;
+            btnVoice.innerHTML = '<span class="material-symbols-outlined align-middle mr-2">stop_circle</span> Berhenti Mendengarkan'; btnVoice.classList.replace('bg-blue-50', 'bg-red-50'); btnVoice.classList.replace('text-primary', 'text-red-500');
+            responsiveVoice.speak(cleanText, "Indonesian Female", { rate: 0.95, onend: () => resetVoiceUI(btnVoice) });
+        }
+        function resetVoiceUI(btn) { btn.innerHTML = '<span class="material-symbols-outlined align-middle mr-2">record_voice_over</span> Dengarkan Materi'; btn.classList.replace('bg-red-50', 'bg-blue-50'); btn.classList.replace('text-red-500', 'text-primary'); }
+        function closeLearningView() { if(window.responsiveVoice) responsiveVoice.cancel(); location.reload(); }
+
+        // Quiz
         async function startQuiz() {
-            document.getElementById('next-part').innerText = "Tunggu...";
             const { data } = await supabaseClient.from('quizzes').select('*').eq('module_id', activeModuleId).order('created_at', { ascending: true });
-            
-            if(!data || data.length === 0) { alert("Belum ada kuis."); return closeLearningView(); }
+            if(!data?.length) return closeLearningView();
             currentQuizzes = data; currentQuizIndex = 0; earnedPoints = 0; userAnswers = {};
-            document.getElementById('material-area').classList.add('hidden'); 
-            document.getElementById('bottom-nav').classList.add('hidden'); 
-            document.getElementById('quiz-area').classList.remove('hidden'); 
+            document.getElementById('material-area').classList.add('hidden'); document.getElementById('bottom-nav').classList.add('hidden'); document.getElementById('quiz-area').classList.remove('hidden');
             renderQuizQuestion();
         }
-
         function renderQuizQuestion() {
-            const q = currentQuizzes[currentQuizIndex];
-            document.getElementById('quiz-question').innerText = `${currentQuizIndex + 1}. ${q.question}`;
-            
-            const navContainer = document.getElementById('quiz-navigation'); navContainer.innerHTML = '';
-            currentQuizzes.forEach((_, idx) => {
-                const isAnswered = userAnswers[idx] ? 'bg-green-100 text-green-700 border-green-300' : 'bg-white text-gray-400 border-gray-200';
-                const isActive = idx === currentQuizIndex ? 'ring-2 ring-primary border-primary bg-blue-50 text-primary' : '';
-                navContainer.innerHTML += `<button onclick="jumpToQuiz(${idx})" class="w-8 h-8 rounded-lg border font-bold text-xs flex items-center justify-center transition-all hover:bg-gray-50 ${isAnswered} ${isActive}">${idx + 1}</button>`;
-            });
-
+            const q = currentQuizzes[currentQuizIndex]; document.getElementById('quiz-question').innerText = q.question;
             const c = document.getElementById('quiz-options'); c.innerHTML = '';
-            [{id:'A', t:q.option_a}, {id:'B', t:q.option_b}, {id:'C', t:q.option_c}, {id:'D', t:q.option_d}].forEach(o => {
-                if(o.t && o.t !== "-") {
-                    const isSelected = userAnswers[currentQuizIndex] === o.id;
-                    const bgClass = isSelected ? 'border-primary bg-blue-50' : 'border-gray-200 bg-white';
-                    const btnClass = isSelected ? 'bg-primary text-white' : 'bg-white text-gray-400';
-                    
-                    const b = document.createElement('button'); 
-                    b.className = `w-full p-4 border-2 rounded-xl text-left font-bold text-sm text-gray-600 transition flex items-center hover:bg-gray-50 ${bgClass}`;
-                    b.innerHTML = `<span class="border px-3 py-1.5 rounded-lg mr-4 font-black transition-all btn-letter ${btnClass}">${o.id}</span> <span class="leading-relaxed">${o.t}</span>`;
-                    b.onclick = () => { userAnswers[currentQuizIndex] = o.id; renderQuizQuestion(); };
-                    c.appendChild(b);
-                }
-            });
-
-            document.getElementById('btn-prev-quiz').classList.toggle('hidden', currentQuizIndex === 0);
-            const nextBtn = document.getElementById('btn-next-quiz');
-            if (currentQuizIndex === currentQuizzes.length - 1) {
-                nextBtn.innerText = "Kumpulkan Kuis"; nextBtn.classList.replace('bg-primary', 'bg-orange-500'); nextBtn.onclick = evaluateQuiz;
+            if (q.quiz_type === 'mitos_fakta') {
+                ['Mitos', 'Fakta'].forEach(opt => { const sel = userAnswers[currentQuizIndex] === opt ? 'border-primary bg-blue-50' : 'border-gray-200'; c.innerHTML += `<button onclick="userAnswers[${currentQuizIndex}]='${opt}';renderQuizQuestion();" class="w-full p-5 border-2 rounded-2xl text-center font-bold text-lg transition ${sel} hover:bg-gray-50">${opt}</button>`; });
             } else {
-                nextBtn.innerText = "Berikutnya"; nextBtn.classList.replace('bg-orange-500', 'bg-primary'); nextBtn.onclick = () => navigateQuiz(1);
+                ['A','B','C','D'].forEach(o => { const optText = q['option_'+o.toLowerCase()]; if(optText && optText !== "-") { const sel = userAnswers[currentQuizIndex] === o ? 'border-primary bg-blue-50' : 'border-gray-200'; c.innerHTML += `<button onclick="userAnswers[${currentQuizIndex}]='${o}';renderQuizQuestion();" class="w-full p-4 border-2 rounded-xl text-left font-bold text-sm transition ${sel} hover:bg-gray-50">${o}. ${optText}</button>`; } });
             }
+            const next = document.getElementById('btn-next-quiz');
+            if(currentQuizIndex === currentQuizzes.length-1) { next.innerText = "Selesai & Cek Skor"; next.onclick = evaluateQuiz; } else { next.innerText = "Selanjutnya"; next.onclick = () => { currentQuizIndex++; renderQuizQuestion(); }; }
+        }
+        async function evaluateQuiz() {
+            earnedPoints = 0; let streak = 0;
+            currentQuizzes.forEach((q, i) => { if(userAnswers[i] === q.correct_answer) { streak++; earnedPoints += 20 + (streak > 1 ? 5 : 0); } else streak = 0; });
+            const { data: prog } = await supabaseClient.from('user_progress').select('*').eq('user_id', userData.id).eq('module_id', activeModuleId);
+            if(prog?.length) { if(earnedPoints > prog[0].score) { await supabaseClient.from('user_progress').update({ score: earnedPoints }).eq('id', prog[0].id); await supabaseClient.from('users').update({ total_points: userData.total_points + (earnedPoints - prog[0].score) }).eq('id', userData.id); } } 
+            else { await supabaseClient.from('user_progress').insert([{ user_id: userData.id, module_id: activeModuleId, score: earnedPoints }]); await supabaseClient.from('users').update({ total_points: userData.total_points + earnedPoints }).eq('id', userData.id); }
+            alert(`Selesai! Skor Anda: ${earnedPoints}`); location.reload();
         }
 
-        function navigateQuiz(dir) { currentQuizIndex += dir; renderQuizQuestion(); }
-        function jumpToQuiz(index) { currentQuizIndex = index; renderQuizQuestion(); }
-
-        function evaluateQuiz() {
-            const totalAnswered = Object.keys(userAnswers).length;
-            if (totalAnswered < currentQuizzes.length) { if (!confirm(`Anda baru menjawab ${totalAnswered} dari ${currentQuizzes.length} soal. Yakin ingin mengumpulkan?`)) return; }
-            
-            earnedPoints = 0;
-            currentQuizzes.forEach((q, idx) => { if (userAnswers[idx] === q.correct_answer) earnedPoints += (q.points_reward || 20); });
-            
-            document.getElementById('quiz-area').innerHTML = `
-                <div class="py-10">
-                    <h2 class="text-3xl font-headline font-bold mb-2 text-gray-800">Kuis Selesai! 🎉</h2>
-                    <p class="text-gray-400 mb-8 font-bold">Poin kuis yang didapatkan:</p>
-                    <div class="text-6xl font-black text-primary mb-10 drop-shadow-md">+${earnedPoints}</div>
-                    <button id="btn-save-score" onclick="saveScore()" class="w-full py-4 bg-orange-500 text-white rounded-2xl font-bold shadow-lg shadow-orange-500/30 hover:scale-105 transition">Simpan Progres</button>
-                </div>`;
-        }
-        
-        async function saveScore() {
-            const btn = document.getElementById('btn-save-score'); btn.innerText = "Menyimpan ke Server..."; btn.disabled = true;
-            
-            const { data: progData } = await supabaseClient.from('user_progress').select('*').eq('user_id', userData.id).eq('module_id', activeModuleId);
-            
-            if(progData && progData.length > 0) {
-                const oldScore = progData[0].score || 0;
-                if(earnedPoints > oldScore) {
-                    const diff = earnedPoints - oldScore;
-                    const finalTotal = userData.total_points + diff;
-                    await supabaseClient.from('user_progress').update({ score: earnedPoints }).eq('id', progData[0].id);
-                    await supabaseClient.from('users').update({ total_points: finalTotal }).eq('id', userData.id);
-                    userData.total_points = finalTotal;
-                    alert('Skor baru lebih tinggi! Poin diperbarui.');
-                } else alert('Selesai! Skor sebelumnya sudah yang tertinggi.');
-            } else {
-                const finalTotal = userData.total_points + earnedPoints;
-                await supabaseClient.from('user_progress').insert([{ user_id: userData.id, module_id: activeModuleId, score: earnedPoints, status: 'completed', progress_percentage: 100 }]);
-                await supabaseClient.from('users').update({ total_points: finalTotal }).eq('id', userData.id);
-                userData.total_points = finalTotal;
-                alert('Poin tersimpan!');
-            }
-            
-            localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
-            updateUIForUser(); closeLearningView(); 
-        }
-
-        function closeLearningView() { 
-            document.getElementById('learning-view').classList.add('hidden'); 
-            document.body.style.overflow = 'auto'; 
-            document.getElementById('media-container').innerHTML = ''; 
-            document.getElementById('part-body').innerHTML = '';
-            document.getElementById('main-mobile-nav').classList.remove('hidden');
-            document.getElementById('quiz-area').innerHTML = `
-                <div id="quiz-navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
-                <h2 id="quiz-question" class="text-xl md:text-2xl font-bold mb-8 text-gray-800">...</h2>
-                <div id="quiz-options" class="grid gap-3 text-left"></div>
-                <div class="flex gap-4 mt-8">
-                    <button id="btn-prev-quiz" class="flex-1 py-4 bg-white border border-gray-300 text-gray-600 rounded-xl font-bold transition hover:bg-gray-100 hidden">Sebelumnya</button>
-                    <button id="btn-next-quiz" class="flex-[2] py-4 bg-primary text-white rounded-xl font-bold transition shadow-lg">Berikutnya</button>
-                </div>`;
+        async function loadUserChart() {
+            const { data } = await supabaseClient.from('user_progress').select('score, modules(title)').eq('user_id', userData.id);
+            if(!data?.length) return; const ctx = document.getElementById('userProgressChart').getContext('2d'); if(myUserChart) myUserChart.destroy();
+            myUserChart = new Chart(ctx, { type: 'bar', data: { labels: data.map(d => d.modules?.title.substring(0,12)+'...'), datasets: [{ label: 'Skor', data: data.map(d => d.score), backgroundColor: '#005a9c', borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } } });
         }
     </script>
 </body>
