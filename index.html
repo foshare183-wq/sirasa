@@ -245,27 +245,92 @@
         let earnedPoints = 0; let userAnswers = {}; let chatInterval = null; let myUserChart = null;
         let isTTSActive = true; 
 
-        window.onload = async function() { 
-            await checkTTSConfig();
-            const { data: { session } } = await supabaseClient.auth.getSession();
+window.onload = async function() { 
+    // 1. Jalankan konfigurasi fitur luar (seperti TTS)
+    await checkTTSConfig();
+    
+    // 2. Cek penyimpanan lokal (Local Storage) untuk fallback UI agar tidak berkedip
+    const localData = localStorage.getItem('healthlearn_user');
+    if (localData) {
+        userData = JSON.parse(localData);
+        updateUIForUser(); // Tampilkan UI seolah login sementara memvalidasi
+    }
+
+    // 3. Pasang "Radar" penangkap event Auth (Paling Krusial untuk Google Login)
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+            // Ketika token dari URL berhasil dibaca oleh Supabase
+            await handleUserSession(session);
+        } else if (event === 'SIGNED_OUT') {
+            localStorage.removeItem('healthlearn_user');
+            userData = null;
+            updateUIForUser();
+        }
+    });
+
+    // 4. Pengecekan sesi statis (untuk user yang sudah login sebelumnya)
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+        await handleUserSession(session);
+    } else if (localData) { 
+        // Validasi keaslian data lokal jika tidak ada sesi Supabase Auth
+        const { data: fresh } = await supabaseClient.from('users').select('*').eq('id', userData.id);
+        if (fresh?.length) { 
+            userData = fresh[0]; 
+            localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
+            updateUIForUser();
+        } else { 
+            localStorage.removeItem('healthlearn_user'); 
+            userData = null; 
+            updateUIForUser(); 
+        }
+    } 
+    
+    // 5. Muat konten halaman
+    loadModules(); 
+    checkMentorStatus();
+};
+
+// Fungsi khusus untuk menangani proses sinkronisasi data user Google ke tabel public.users
+async function handleUserSession(session) {
+    try {
+        // Cek apakah user Google ini sudah tercatat di tabel kita
+        let { data: uData, error: selectErr } = await supabaseClient.from('users').select('*').eq('email', session.user.email);
+        
+        if (selectErr) console.error("Error cek data user:", selectErr);
+
+        // Jika user belum ada di tabel, daftarkan!
+        if (!uData || uData.length === 0) {
+            const newUser = { 
+                nama_lengkap: session.user.user_metadata.full_name || session.user.email.split('@')[0], 
+                email: session.user.email, 
+                role: 'user', 
+                total_points: 0 
+            };
             
-            if(session) {
-                let { data: uData } = await supabaseClient.from('users').select('*').eq('email', session.user.email);
-                if(!uData || uData.length === 0) {
-                    const newUser = { nama_lengkap: session.user.user_metadata.full_name || session.user.email.split('@')[0], email: session.user.email, role: 'user', total_points: 0 };
-                    await supabaseClient.from('users').insert([newUser]);
-                    const { data: freshData } = await supabaseClient.from('users').select('*').eq('email', session.user.email);
-                    uData = freshData;
-                }
-                if(uData?.length) { userData = uData[0]; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); }
-            } else if(localStorage.getItem('healthlearn_user')) { 
-                const localData = JSON.parse(localStorage.getItem('healthlearn_user')); 
-                const { data: fresh } = await supabaseClient.from('users').select('*').eq('id', localData.id);
-                if(fresh?.length) { userData = fresh[0]; localStorage.setItem('healthlearn_user', JSON.stringify(userData)); } 
-                else { localStorage.removeItem('healthlearn_user'); userData = null; }
-            } 
-            updateUIForUser(); loadModules(); checkMentorStatus();setInterval(checkUserNotif, 5000);
-        };
+            const { error: insertErr } = await supabaseClient.from('users').insert([newUser]);
+            
+            if (insertErr) {
+                console.error("GAGAL MENDAFTARKAN USER GOOGLE:", insertErr.message);
+                alert("Gagal masuk! Silakan cek pengaturan RLS INSERT di Supabase Anda.");
+                return; // Stop eksekusi agar tidak terjadi error lanjutan
+            }
+            
+            // Ambil ulang data yang baru saja berhasil di-insert
+            const { data: freshData } = await supabaseClient.from('users').select('*').eq('email', session.user.email);
+            uData = freshData;
+        }
+        
+        // Jika data berhasil didapat, tetapkan sebagai user aktif
+        if (uData?.length) { 
+            userData = uData[0]; 
+            localStorage.setItem('healthlearn_user', JSON.stringify(userData)); 
+            updateUIForUser(); // Perbarui Navbar dan Tab
+        }
+    } catch (err) {
+        console.error("Fatal Error pada Session Handling:", err);
+    }
+}
 
         // TTS & UI Init
         async function checkTTSConfig() {

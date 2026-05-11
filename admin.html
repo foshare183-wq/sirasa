@@ -255,7 +255,9 @@
                 for (let i = 0; i < pIs.length; i++) {
                     const el = pIs[i]; const type = el.querySelector('.p-type').value; let data = '';
                     if (type === 'article') { data = el.querySelector('.p-data-text').value.replace(/\n/g, '<br>'); } 
-                    else if (type === 'youtube') { data = el.querySelector('.p-data').value; } 
+                    else if (type === 'youtube' || type === 'embed') { 
+    data = el.querySelector('.p-data').value; 
+} 
                     else { const f = el.querySelector('.p-data-file'); data = f?.files?.length ? await uploadFileToSupabase(f) : (el.querySelector('.p-data')?.value || ''); }
                     pages.push({ type, title: el.querySelector('.p-title').value, data });
                 }
