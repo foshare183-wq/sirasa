@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dasbor Analitik - KITA SEBAYA</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../assets/js/theme.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap">
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    
+    <link rel="stylesheet" href="../assets/css/analitik.css">
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800 p-2 md:p-6">
+    
+    <main class="w-full max-w-[1500px] mx-auto overflow-hidden">
+        
+        <div class="mb-4">
+            <h2 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-chart-simple text-slate-600 mr-2"></i> Dasbor Analitik Riset Terpadu</h2>
+            <p class="text-sm text-slate-500">Pusat komando evaluasi data responden platform KITA SEBAYA.</p>
+        </div>
+
+        <!-- FILTER GLOBAL (KOTA & TANGGAL) -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
+            <div class="flex items-center gap-2 md:border-r border-slate-200 md:pr-4 w-full md:w-auto">
+                <i class="fa-solid fa-filter text-slate-400"></i>
+                <span class="text-sm font-bold text-slate-700">Filter Global:</span>
+            </div>
+            <select id="filter-kota" class="bg-slate-50 border border-slate-200 text-sm font-bold text-slate-700 rounded-lg px-3 py-2 outline-none w-full md:w-auto">
+                <option value="Semua">Semua Asal Kota</option>
+            </select>
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <input type="date" id="filter-start" class="bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium px-3 py-2 outline-none w-full">
+                <span class="text-slate-400">-</span>
+                <input type="date" id="filter-end" class="bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium px-3 py-2 outline-none w-full">
+            </div>
+            <button onclick="terapkanFilter()" class="bg-slate-800 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-slate-900 transition w-full md:w-auto shrink-0 shadow-sm">
+                <i class="fa-solid fa-rotate mr-2"></i> Terapkan
+            </button>
+        </div>
+
+        <!-- NAVIGASI TAB ANALITIK -->
+        <div class="flex gap-2 mb-6 border-b border-slate-200 overflow-x-auto">
+            <button onclick="switchAnaTab('tab-global')" id="btn-tab-global" class="py-3 px-5 font-bold border-b-2 border-indigo-600 text-indigo-600 transition whitespace-nowrap"><i class="fa-solid fa-globe mr-2"></i> Data Global</button>
+            <button onclick="switchAnaTab('tab-modul')" id="btn-tab-modul" class="py-3 px-5 font-bold text-slate-500 hover:text-indigo-600 transition whitespace-nowrap"><i class="fa-solid fa-book-open mr-2"></i> Data Per Modul</button>
+            <button onclick="switchAnaTab('tab-user')" id="btn-tab-user" class="py-3 px-5 font-bold text-slate-500 hover:text-indigo-600 transition whitespace-nowrap"><i class="fa-solid fa-user mr-2"></i> Data Per Responden</button>
+            <button onclick="switchAnaTab('tab-item')" id="btn-tab-item" class="py-3 px-5 font-bold text-slate-500 hover:text-indigo-600 transition whitespace-nowrap"><i class="fa-solid fa-table-cells mr-2"></i> Data Item (SPSS)</button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: GLOBAL (SEMUA USER TERFILTER)       -->
+        <!-- ========================================== -->
+        <div id="tab-global" class="tab-ana active">
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-xl border shadow-sm text-center"><p class="text-[10px] font-bold text-slate-400">Total Sampel Filter</p><h3 id="g-populasi" class="text-2xl font-black text-slate-700">0</h3></div>
+                <div class="bg-white p-4 rounded-xl border shadow-sm text-center"><p class="text-[10px] font-bold text-slate-400">Responden Aktif</p><h3 id="g-aktif" class="text-2xl font-black text-indigo-600">0</h3></div>
+                <div class="bg-white p-4 rounded-xl border shadow-sm text-center"><p class="text-[10px] font-bold text-slate-400">Total Waktu Belajar</p><h3 id="g-waktu" class="text-2xl font-black text-indigo-600">0 Jam</h3></div>
+                <div class="bg-white p-4 rounded-xl border shadow-sm text-center"><p class="text-[10px] font-bold text-slate-400">Rata-rata N-Gain</p><h3 id="g-ngain" class="text-2xl font-black text-emerald-600">0.00</h3></div>
+            </div>
+
+            <!-- Baris 1: Demografi Terpisah -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-venus-mars text-slate-500 mr-2"></i>Distribusi Gender</h4>
+                    <div class="relative h-48"><canvas id="c-gender"></canvas></div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-users text-slate-500 mr-2"></i>Distribusi Kategori</h4>
+                    <div class="relative h-48"><canvas id="c-kategori"></canvas></div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-calendar-days text-slate-500 mr-2"></i>Sebaran Usia</h4>
+                    <div class="relative h-48"><canvas id="c-usia"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Baris 2: Tren dan Kesenjangan -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-chart-line text-indigo-500 mr-2"></i>Tren Peningkatan (Pre vs Post)</h4>
+                    <div class="relative h-64"><canvas id="c-trend-global"></canvas></div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-spider text-rose-500 mr-2"></i>Kesenjangan Pemahaman (Radar)</h4>
+                    <div class="relative h-64"><canvas id="c-radar-global"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Baris 3: Retensi, N-Gain Distribusi & Leaderboard -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-chart-pie text-emerald-500 mr-2"></i>Distribusi N-Gain</h4>
+                    <div class="relative h-56"><canvas id="c-ngain-pie"></canvas></div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-filter text-amber-500 mr-2"></i>Funnel Retensi Evaluasi</h4>
+                    <div class="relative h-56"><canvas id="c-funnel-global"></canvas></div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm flex flex-col">
+                    <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-medal text-slate-500 mr-2"></i>Papan Peringkat (Top 5)</h4>
+                    <div id="wadah-leaderboard" class="space-y-3 flex-1 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- Tabel Export -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col mb-8 overflow-hidden">
+                <div class="p-5 border-b flex justify-between items-center bg-slate-50">
+                    <h4 class="font-bold text-sm"><i class="fa-solid fa-database text-slate-600 mr-2"></i>Master Data Ekspor (SPSS Ready)</h4>
+                    <button onclick="exportMasterExcel()" class="bg-slate-800 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-900 transition"><i class="fa-solid fa-download mr-2"></i>Unduh Excel (.xlsx)</button>
+                </div>
+                <div class="overflow-x-auto table-container">
+                    <table class="w-full text-left min-w-[2000px]">
+                        <thead class="bg-slate-100 text-xs border-b text-slate-600" id="headMasterData"></thead>
+                        <tbody id="tabelMasterData" class="text-sm divide-y text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: PER MODUL                           -->
+        <!-- ========================================== -->
+        <div id="tab-modul" class="tab-ana">
+            <div class="bg-white p-5 rounded-xl border shadow-sm mb-6 flex items-center gap-4">
+                <label class="font-bold text-slate-700 whitespace-nowrap"><i class="fa-solid fa-folder-open text-slate-500 mr-2"></i>Pilih Modul/Evaluasi:</label>
+                <select id="select-modul" onchange="renderTabModul()" class="flex-1 p-2 border border-slate-300 rounded-lg font-bold text-indigo-700 bg-indigo-50 outline-none"></select>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-5 rounded-xl border shadow-sm text-center"><p class="text-xs font-bold text-slate-400">Akses Responden</p><h3 id="m-interaksi" class="text-3xl font-black text-slate-700 mt-2">0</h3><p class="text-xs text-slate-500">Unik User</p></div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm text-center"><p class="text-xs font-bold text-slate-400">Rata-Rata Durasi</p><h3 id="m-waktu" class="text-3xl font-black text-slate-700 mt-2">0s</h3><p class="text-xs text-slate-500">Per Pengerjaan</p></div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm text-center"><p class="text-xs font-bold text-slate-400">Rata-Rata Skor Poin</p><h3 id="m-skor" class="text-3xl font-black text-indigo-600 mt-2">-</h3><p class="text-xs text-slate-500">Nilai Rataan</p></div>
+            </div>
+
+            <div class="bg-white rounded-xl border shadow-sm p-6" id="wadah-analisis-modul">
+                <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-chart-bar text-slate-500 mr-2"></i>Distribusi Pemahaman / Durasi Modul</h4>
+                <div class="relative h-64"><canvas id="c-distribusi-modul"></canvas></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: PER RESPONDEN                       -->
+        <!-- ========================================== -->
+        <div id="tab-user" class="tab-ana">
+            <div class="bg-white p-5 rounded-xl border shadow-sm mb-6 flex flex-col md:flex-row items-center gap-4">
+                <label class="font-bold text-slate-700 whitespace-nowrap"><i class="fa-solid fa-magnifying-glass text-slate-500 mr-2"></i>Cari Responden:</label>
+                <select id="select-user" onchange="renderTabUser()" class="flex-1 p-2 border border-slate-300 rounded-lg font-bold text-slate-700 bg-slate-50 outline-none"></select>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Profil Singkat -->
+                <div class="bg-white p-6 rounded-xl border shadow-sm lg:col-span-1 flex flex-col items-center justify-center text-center">
+                    <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center text-3xl font-bold text-white mb-4" id="u-ava"><i class="fa-solid fa-user"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800" id="u-nama">-</h3>
+                    <p class="text-sm text-slate-500 mb-2" id="u-bio">- | - | -</p>
+                    <p class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full mb-6" id="u-lokasi">-</p>
+                    <div class="w-full grid grid-cols-2 gap-3 text-left">
+                        <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100"><p class="text-[10px] font-bold text-slate-500">Total Akumulasi Poin</p><p class="text-2xl font-black text-indigo-600" id="u-poin">0</p></div>
+                        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100"><p class="text-[10px] font-bold text-slate-500">Kinerja N-Gain</p><p class="text-2xl font-black text-emerald-600" id="u-ngain">-</p></div>
+                    </div>
+                </div>
+                
+                <!-- Radar Individu -->
+                <div class="bg-white p-6 rounded-xl border shadow-sm lg:col-span-2">
+                    <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-spider text-slate-500 mr-2"></i>Peta Peningkatan Dimensi (Pre vs Post)</h4>
+                    <div class="relative h-64"><canvas id="c-radar-individu"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Log Aktivitas -->
+            <div class="bg-white rounded-xl border shadow-sm p-6 mt-6">
+                <h4 class="font-bold text-sm mb-4"><i class="fa-solid fa-timeline text-slate-500 mr-2"></i>Rekam Jejak Belajar (Timeline Aktivitas)</h4>
+                <div id="wadah-timeline-user" class="space-y-4 max-h-80 overflow-y-auto pl-2 border-l-2 border-slate-200">
+                    <p class="text-sm text-slate-400 italic">Pilih responden untuk melihat histori aktivitas.</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ========================================== -->
+        <!-- TAB 4: DATA ITEM PER SOAL (SPSS)           -->
+        <!-- ========================================== -->
+        <div id="tab-item" class="tab-ana">
+            <section class="bg-white rounded-xl border border-slate-200 mb-4">
+                <div class="p-5 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-900">Skor per butir soal</h3>
+                    <p class="text-sm text-slate-500 mt-1 max-w-3xl">Satu baris untuk satu responden, satu kolom untuk satu butir soal. Data mengikuti filter kota dan tanggal di atas. Sel kosong berarti tidak dijawab, dan di SPSS terbaca sebagai missing.</p>
+                </div>
+                <div class="p-5 space-y-5">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-700 mb-2">Modul</p>
+                        <div id="item-modul" class="flex gap-2 overflow-x-auto pb-1"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <label class="block">
+                            <span class="block text-sm font-semibold text-slate-700 mb-1.5">Jika mengerjakan lebih dari sekali, pakai</span>
+                            <select id="item-mode" onchange="segarkanTabItem()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="pertama">Percobaan pertama</option>
+                                <option value="terakhir">Percobaan terakhir</option>
+                            </select>
+                        </label>
+                        <label class="flex items-center gap-2.5 text-sm text-slate-700 md:pb-2 cursor-pointer">
+                            <input type="checkbox" id="item-nama" onchange="segarkanTabItem()" class="w-4 h-4 accent-teal-700">
+                            Tampilkan dan ekspor nama responden
+                        </label>
+                        <p id="item-ringkasan" class="text-sm text-slate-500 md:text-right md:pb-2"></p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+                <div id="item-dimensi" class="flex gap-1 overflow-x-auto px-3 border-b border-slate-200"></div>
+                <div id="item-tabel"></div>
+            </section>
+
+            <section class="bg-white rounded-xl border border-slate-200 p-5 mb-8 flex flex-col md:flex-row md:items-end gap-4">
+                <label class="block flex-1 max-w-sm">
+                    <span class="block text-sm font-semibold text-slate-700 mb-1.5">Data yang diekspor</span>
+                    <select id="item-cakupan" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        <option value="modul">Modul yang sedang dipilih</option>
+                        <option value="semua">Semua modul berkuis dalam satu file (untuk uji pre-post)</option>
+                    </select>
+                </label>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="unduhExcelSpss(cakupanEkspor())" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-semibold transition"><i class="fa-solid fa-file-excel mr-2"></i>Unduh data (.xlsx)</button>
+                    <button type="button" onclick="unduhSintaksSpss(cakupanEkspor())" class="bg-white border border-slate-300 hover:border-slate-500 text-slate-800 px-4 py-2 rounded-lg text-sm font-semibold transition"><i class="fa-solid fa-code mr-2"></i>Unduh sintaks label (.sps)</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="../assets/js/pages/analitik.js"></script>
+    <script src="../assets/js/pages/analitik-item.js"></script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KITA SEBAYA | Edukasi Pencegahan HIV/AIDS</title>
+    <meta name="description" content="Belajar pencegahan HIV/AIDS lewat modul flipbook interaktif, pre-test, dan post-test.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/theme.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/common.js"></script>
+
+    <link rel="stylesheet" href="assets/css/index.css">
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="glass-nav sticky top-0 z-40">
+        <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5" aria-label="KITA SEBAYA, beranda">
+                <svg class="w-6 h-7 text-rose-600" viewBox="20 10 200 285" fill="none" aria-hidden="true">
+                    <path d="M36 285 L140 120 C175 70 165 20 120 20 C75 20 65 70 100 120 L110 136" stroke="currentColor" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M131 169 L204 285" stroke="currentColor" stroke-width="26" stroke-linecap="round"/>
+                </svg>
+                <span class="text-[15px] font-extrabold tracking-[0.06em] text-slate-900">KITA SEBAYA</span>
+            </a>
+            <button type="button" onclick="bukaModalAuth('login')" class="text-sm font-semibold text-slate-700 hover:text-slate-950 px-4 py-2 rounded-lg hover:bg-slate-100 transition">Masuk</button>
+        </nav>
+    </header>
+
+    <main class="flex-1">
+        <!-- Hero -->
+        <section class="relative overflow-hidden">
+            <svg class="pita-latar absolute -right-24 md:right-[4%] top-10 w-[420px] md:w-[520px] h-auto text-rose-600/90 pointer-events-none" viewBox="0 0 240 300" fill="none" aria-hidden="true">
+                <path class="pita-garis" d="M36 285 L140 120 C175 70 165 20 120 20 C75 20 65 70 100 120 L115.5 144.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path class="pita-garis pita-garis-2" d="M124.5 159 L204 285" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+
+            <div class="relative max-w-6xl mx-auto px-6 pt-16 md:pt-28 pb-20 md:pb-32 grid md:grid-cols-12 gap-12 items-center">
+                <div class="md:col-span-7">
+                    <p class="text-sm font-semibold text-teal-700 mb-6">Edukasi sebaya pencegahan HIV/AIDS</p>
+                    <h1 class="text-[2.6rem] leading-[1.05] md:text-[4.1rem] md:leading-[1.02] font-extrabold tracking-tighter text-slate-950">
+                        Kenali virusnya, jauhi penyakitnya, jadilah agen peduli.
+                    </h1>
+                    <p class="mt-7 text-lg leading-relaxed text-slate-600 max-w-[34rem]">
+                        Kerjakan pre-test, baca modul interaktif halaman demi halaman, lalu buktikan pemahamanmu di post-test. Setiap jawaban menambah poin dan membawamu naik peringkat.
+                    </p>
+                    <div class="mt-10 flex flex-col sm:flex-row gap-3">
+                        <button type="button" onclick="bukaModalAuth('daftar')" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3.5 rounded-xl transition">Buat akun dan mulai</button>
+                        <button type="button" onclick="bukaModalAuth('login')" class="bg-white border border-slate-300 hover:border-slate-500 text-slate-800 font-semibold px-6 py-3.5 rounded-xl transition">Saya sudah punya akun</button>
+                    </div>
+                </div>
+                <div class="md:col-span-5 hidden md:block">
+                    <img src="assets/img/ilustrasi.png" alt="Ilustrasi remaja belajar bersama" onerror="this.remove()" class="relative w-full max-w-md ml-auto object-contain">
+                </div>
+            </div>
+        </section>
+
+        <!-- Alur belajar: memang berurutan, jadi diberi nomor -->
+        <section class="border-t border-slate-200 bg-white">
+            <div class="max-w-6xl mx-auto px-6 py-20 md:py-24">
+                <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-950 max-w-xl">Tiga langkah di setiap modul</h2>
+                <ol class="mt-12 grid md:grid-cols-3 gap-x-10 gap-y-10">
+                    <li class="border-t-2 border-slate-900 pt-5">
+                        <span class="text-sm font-semibold text-slate-400">1</span>
+                        <h3 class="mt-2 text-lg font-bold text-slate-900">Pre-test</h3>
+                        <p class="mt-2 text-slate-600 leading-relaxed">Jawab beberapa pertanyaan singkat untuk mengukur pemahaman awalmu. Tidak ada jawaban yang dinilai buruk di tahap ini.</p>
+                    </li>
+                    <li class="border-t-2 border-slate-900 pt-5">
+                        <span class="text-sm font-semibold text-slate-400">2</span>
+                        <h3 class="mt-2 text-lg font-bold text-slate-900">Baca modul</h3>
+                        <p class="mt-2 text-slate-600 leading-relaxed">Buka modul flipbook dan balik halamannya seperti buku sungguhan sampai halaman terakhir.</p>
+                    </li>
+                    <li class="border-t-2 border-rose-600 pt-5">
+                        <span class="text-sm font-semibold text-rose-600">3</span>
+                        <h3 class="mt-2 text-lg font-bold text-slate-900">Post-test dan poin</h3>
+                        <p class="mt-2 text-slate-600 leading-relaxed">Kerjakan evaluasi akhir, kumpulkan XP, dan lihat perkembanganmu di rapor pribadi.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-slate-200">
+        <div class="max-w-6xl mx-auto px-6 py-8 text-sm text-slate-500">© 2026 KITA SEBAYA. Dibangun untuk mengedukasi generasi peduli kesehatan.</div>
+    </footer>
+
+    <!-- Modal masuk / daftar -->
+    <div id="modalAuth" class="hidden fixed inset-0 bg-slate-950/50 backdrop-blur-[2px] z-[100] flex items-start sm:items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="judul-auth">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md modal-enter my-8 relative">
+            <button type="button" onclick="tutupModalAuth()" class="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+
+            <div class="p-7 sm:p-8">
+                <h2 id="judul-auth" class="text-xl font-extrabold text-slate-950">Masuk ke akunmu</h2>
+                <p id="sub-auth" class="text-sm text-slate-500 mt-1">Lanjutkan modul dan kumpulkan poinmu.</p>
+
+                <div class="grid grid-cols-2 bg-slate-100 p-1 rounded-xl mt-6 mb-6" role="tablist">
+                    <button type="button" onclick="switchTabAuth('login')" id="tab-login" role="tab">Masuk</button>
+                    <button type="button" onclick="switchTabAuth('daftar')" id="tab-daftar" role="tab">Buat akun</button>
+                </div>
+
+                <!-- Form masuk -->
+                <div id="form-login" class="space-y-4">
+                    <label class="block">
+                        <span class="label-form">Email</span>
+                        <input type="email" id="login-email" autocomplete="email" class="input-form" placeholder="nama@email.com">
+                    </label>
+                    <label class="block">
+                        <span class="label-form">Kata sandi</span>
+                        <input type="password" id="login-password" autocomplete="current-password" class="input-form" onkeydown="if(event.key==='Enter')prosesLogin()">
+                    </label>
+                    <button type="button" onclick="prosesLogin()" id="btn-login" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition mt-2">Masuk</button>
+                </div>
+
+                <!-- Form daftar -->
+                <div id="form-daftar" class="hidden space-y-4">
+                    <label class="block">
+                        <span class="label-form">Nama lengkap</span>
+                        <input type="text" id="reg-nama" autocomplete="name" maxlength="80" class="input-form">
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="block">
+                            <span class="label-form">Jenis kelamin</span>
+                            <select id="reg-gender" class="input-form"><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>
+                        </label>
+                        <label class="block">
+                            <span class="label-form">Tanggal lahir</span>
+                            <input type="date" id="reg-tgl-lahir" class="input-form" min="1940-01-01">
+                        </label>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="block">
+                            <span class="label-form">Kategori</span>
+                            <select id="reg-kategori" class="input-form"><option value="Pelajar">Pelajar</option><option value="Mahasiswa">Mahasiswa</option><option value="Umum">Umum</option></select>
+                        </label>
+                        <label class="block">
+                            <span class="label-form">Asal kota</span>
+                            <select id="reg-kota" class="input-form">
+                                <option value="">Pilih kota</option>
+                                <option value="Ternate">Ternate</option>
+                                <option value="Palembang">Palembang</option>
+                                <option value="Semarang">Semarang</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label class="block">
+                        <span class="label-form">Email</span>
+                        <input type="email" id="reg-email" autocomplete="email" class="input-form" placeholder="nama@email.com">
+                    </label>
+                    <label class="block">
+                        <span class="label-form">Kata sandi</span>
+                        <input type="password" id="reg-password" autocomplete="new-password" minlength="8" class="input-form" aria-describedby="bantuan-sandi">
+                        <span id="bantuan-sandi" class="block text-xs text-slate-500 mt-1.5">Minimal 8 karakter.</span>
+                    </label>
+                    <button type="button" onclick="prosesDaftar()" id="btn-daftar" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition mt-2">Buat akun</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pengantar sistem (slide dari admin) -->
+    <div id="modalIntroSystem" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[200] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden relative modal-enter flex flex-col">
+            <div id="wadah-slides-intro" class="p-8 md:p-12 relative overflow-hidden h-[440px] md:h-[380px]"></div>
+            <div class="px-6 md:px-8 py-4 border-t border-slate-200 flex justify-between items-center">
+                <div id="wadah-dots-intro" class="flex gap-2"></div>
+                <div class="flex gap-2">
+                    <button id="btn-skip-intro" onclick="tutupModalIntro()" class="text-slate-500 hover:text-slate-800 font-semibold text-sm px-4 py-2 transition">Lewati</button>
+                    <button id="btn-next-slide" onclick="nextSlide()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-5 py-2.5 rounded-lg transition">Lanjut</button>
+                    <button id="btn-start-app" onclick="tutupModalIntro()" class="hidden bg-slate-900 hover:bg-slate-800 text-white font-semibold px-5 py-2.5 rounded-lg transition items-center gap-2">Mulai belajar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/pages/index.js"></script>
+</body>
+</html>
