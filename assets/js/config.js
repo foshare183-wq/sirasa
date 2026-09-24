@@ -7,6 +7,6 @@
 //
 // JANGAN PERNAH menaruh service_role key di file mana pun di repo ini.
 const CONFIG = {
-    SUPABASE_URL: "https://XXXX.supabase.co",
-    SUPABASE_ANON_KEY: "XXXX",
+    SUPABASE_URL: "https://rzzmpxeiducczixmwkpo.supabase.co",
+    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6em1weGVpZHVjY3ppeG13a3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzEwOTYsImV4cCI6MjA5NjY0NzA5Nn0.uoLGH53BbizJqAGvBZwaC3GAbEAj20o_xLheKlu3CFY",
 };
