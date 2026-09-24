@@ -1,0 +1,38 @@
+/* Gaya khusus halaman index.html */
+
+.tab-auth {
+    padding: 0.55rem 0;
+    font-size: 0.875rem;
+    border-radius: 9px;
+    color: #6b746f;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+}
+.tab-auth[aria-selected="true"] {
+    background: #fff;
+    color: #18201d;
+    font-weight: 650;
+    box-shadow: 0 1px 2px rgba(24, 32, 29, 0.08);
+}
+
+/* Satu-satunya gerak otomatis di halaman: pita digambar sekali saat halaman dibuka */
+.pita-garis {
+    stroke-dasharray: 900;
+    stroke-dashoffset: 900;
+    animation: gambarPita 2.4s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
+}
+.pita-garis-2 {
+    stroke-dasharray: 160;
+    stroke-dashoffset: 160;
+    animation-duration: 0.5s;
+    animation-delay: 2.3s;
+}
+@keyframes gambarPita {
+    to { stroke-dashoffset: 0; }
+}
+.pita-latar {
+    opacity: 0.22;
+}
+@media (min-width: 768px) {
+    .pita-latar { opacity: 0.9; }
+}

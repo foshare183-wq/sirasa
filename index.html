@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KITA SEBAYA | Edukasi Pencegahan HIV/AIDS</title>
+    <meta name="description" content="Belajar pencegahan HIV/AIDS lewat modul flipbook interaktif, pre-test, dan post-test.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/theme.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/common.js"></script>
+
+    <link rel="stylesheet" href="assets/css/index.css">
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="glass-nav sticky top-0 z-40">
+        <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5" aria-label="KITA SEBAYA, beranda">
+                <svg class="w-6 h-7 text-rose-600" viewBox="20 10 200 285" fill="none" aria-hidden="true">
+                    <path d="M36 285 L140 120 C175 70 165 20 120 20 C75 20 65 70 100 120 L110 136" stroke="currentColor" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M131 169 L204 285" stroke="currentColor" stroke-width="26" stroke-linecap="round"/>
+                </svg>
+                <span class="text-[15px] font-extrabold tracking-[0.06em] text-slate-900">KITA SEBAYA</span>
+            </a>
+            <button type="button" onclick="bukaModalAuth('login')" class="text-sm font-semibold text-slate-700 hover:text-slate-950 px-4 py-2 rounded-lg hover:bg-slate-100 transition">Masuk</button>
+        </nav>
+    </header>
+
+    <main class="flex-1">
+        <!-- Hero -->
+        <section class="relative overflow-hidden bg-gradient-to-b from-teal-50 via-white to-white">
+            <div class="blob-latar -left-32 -top-32 w-96 h-96 bg-teal-200"></div>
+            <div class="blob-latar right-[-6rem] top-24 w-[26rem] h-[26rem] bg-amber-200"></div>
+            <div class="blob-latar left-1/3 bottom-[-8rem] w-80 h-80 bg-sky-200"></div>
+
+            <div class="relative max-w-6xl mx-auto px-6 pt-14 md:pt-20 pb-24 md:pb-32 grid md:grid-cols-12 gap-12 items-center">
+                <div class="md:col-span-7">
+                    <span class="inline-flex items-center gap-2 bg-white text-teal-700 text-sm font-bold px-4 py-2 rounded-full shadow-sm border border-teal-100 mb-6">
+                        <i class="fa-solid fa-gamepad text-amber-500"></i> Belajar sambil main, bukan cuma baca
+                    </span>
+                    <h1 class="font-display text-[2.5rem] leading-[1.08] sm:text-[3.1rem] md:text-[3.9rem] md:leading-[1.03] font-extrabold text-slate-950">
+                        Kenali virusnya, jauhi penyakitnya,
+                        <span class="relative inline-block text-teal-600">jadilah agen peduli
+                            <svg class="absolute left-0 -bottom-1 w-full h-3 text-amber-300 -z-10" viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 9 C 80 2, 220 2, 298 9" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round"/></svg>
+                        </span>.
+                    </h1>
+                    <p class="mt-7 text-lg leading-relaxed text-slate-600 max-w-[34rem]">
+                        Kerjakan pre-test, jelajahi modul flipbook interaktif, lalu taklukkan post-test. Setiap misi selesai, poin XP-mu bertambah dan namamu naik di papan peringkat.
+                    </p>
+                    <div class="mt-9 flex flex-col sm:flex-row gap-3">
+                        <button type="button" onclick="bukaModalAuth('daftar')" class="btn-pop bg-teal-600 hover:bg-teal-500 text-white px-7 py-4" style="--btn-pop-shadow:#0f5c3a">
+                            <i class="fa-solid fa-rocket"></i> Mulai petualangan
+                        </button>
+                        <button type="button" onclick="bukaModalAuth('login')" class="btn-pop bg-white hover:bg-slate-50 text-slate-800 px-7 py-4" style="--btn-pop-shadow:#cdc6ac">
+                            Saya sudah punya akun
+                        </button>
+                    </div>
+                    <div class="mt-10 flex flex-wrap items-center gap-3">
+                        <span class="stiker inline-flex items-center gap-1.5 bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full" style="--stiker-sudut:-6deg"><i class="fa-solid fa-star"></i> Kumpulkan XP</span>
+                        <span class="stiker inline-flex items-center gap-1.5 bg-sky-100 text-sky-800 text-xs font-bold px-3 py-1.5 rounded-full" style="--stiker-sudut:4deg"><i class="fa-solid fa-trophy"></i> Naik peringkat</span>
+                        <span class="stiker inline-flex items-center gap-1.5 bg-rose-100 text-rose-800 text-xs font-bold px-3 py-1.5 rounded-full" style="--stiker-sudut:-3deg"><i class="fa-solid fa-volume-high"></i> Modul bisa dibacakan</span>
+                    </div>
+                </div>
+                <div class="md:col-span-5 relative hidden md:block">
+                    <div class="mengambang relative w-full max-w-md ml-auto" style="--float-rot:-3deg; --float-rot-2:2deg">
+                        <svg viewBox="0 0 420 460" class="w-full h-auto drop-shadow-2xl" role="img" aria-label="Ilustrasi perangkat menampilkan modul flipbook dengan lencana pencapaian">
+                            <ellipse cx="230" cy="430" rx="150" ry="18" fill="#0F4931" opacity=".08"/>
+                            <g transform="rotate(-5 210 210)">
+                                <rect x="55" y="35" width="310" height="370" rx="28" fill="#ffffff" stroke="#E4E0D0" stroke-width="2"/>
+                                <rect x="55" y="35" width="310" height="64" rx="28" fill="#137347"/>
+                                <rect x="55" y="71" width="310" height="28" fill="#137347"/>
+                                <circle cx="86" cy="67" r="9" fill="#FBAF22"/>
+                                <rect x="106" y="60" width="120" height="14" rx="7" fill="#ffffff" opacity=".85"/>
+                                <rect x="85" y="123" width="110" height="150" rx="10" fill="#EDF7F0"/>
+                                <rect x="205" y="123" width="110" height="150" rx="10" fill="#FEF1F0"/>
+                                <rect x="100" y="140" width="80" height="8" rx="4" fill="#A5DDB8"/>
+                                <rect x="100" y="158" width="80" height="8" rx="4" fill="#A5DDB8"/>
+                                <rect x="100" y="176" width="55" height="8" rx="4" fill="#A5DDB8"/>
+                                <rect x="220" y="140" width="80" height="8" rx="4" fill="#F9BAB4"/>
+                                <rect x="220" y="158" width="80" height="8" rx="4" fill="#F9BAB4"/>
+                                <rect x="220" y="176" width="55" height="8" rx="4" fill="#F9BAB4"/>
+                                <circle cx="140" cy="230" r="22" fill="#3FAE73"/>
+                                <path d="M130 230l7 8 15-17" stroke="#ffffff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="260" cy="230" r="22" fill="#EA5F53"/>
+                                <path d="M254 218c0 6 6 11 6 11s6-5 6-11a6 6 0 0 0-6-4 6 6 0 0 0-6 4z" fill="#ffffff"/>
+                                <rect x="85" y="300" width="230" height="14" rx="7" fill="#F1EFE6"/>
+                                <rect x="85" y="300" width="152" height="14" rx="7" fill="#F58F0B"/>
+                                <rect x="85" y="332" width="90" height="30" rx="15" fill="#0F5C3A"/>
+                                <text x="130" y="352" text-anchor="middle" font-family="Baloo 2, sans-serif" font-size="14" font-weight="700" fill="#ffffff">Lanjut</text>
+                            </g>
+                            <circle cx="368" cy="128" r="30" fill="#FBAF22"/>
+                            <path d="M368 113l4.5 9.2 10.1 1.5-7.3 7.1 1.7 10-9-4.7-9 4.7 1.7-10-7.3-7.1 10.1-1.5z" fill="#ffffff"/>
+                            <circle cx="46" cy="330" r="20" fill="#3B9AF5" opacity=".9"/>
+                            <path d="M38 330l6 6 10-12" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="40" cy="120" r="7" fill="#DB3F31"/>
+                            <circle cx="60" cy="145" r="4" fill="#8657E6"/>
+                        </svg>
+                    </div>
+                    <div class="stiker absolute -top-2 right-4 bg-white rounded-2xl shadow-lg px-4 py-3 flex items-center gap-2" style="--stiker-sudut:-5deg">
+                        <span class="w-9 h-9 rounded-full bg-amber-400 text-white flex items-center justify-center text-sm font-black">+50</span>
+                        <span class="text-xs font-bold text-slate-700 leading-tight">XP<br>didapat</span>
+                    </div>
+                    <div class="stiker absolute bottom-6 -left-4 bg-white rounded-2xl shadow-lg px-4 py-3 flex items-center gap-2" style="--stiker-sudut:4deg">
+                        <i class="fa-solid fa-crown text-amber-500 text-lg"></i>
+                        <span class="text-xs font-bold text-slate-700 leading-tight">Peringkat<br>#1 minggu ini</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alur belajar sebagai peta level, karena memang berurutan -->
+        <section class="border-t border-slate-200 bg-white relative overflow-hidden">
+            <div class="max-w-6xl mx-auto px-6 py-20 md:py-24">
+                <div class="text-center max-w-xl mx-auto mb-16">
+                    <span class="text-sm font-bold text-teal-700">Cara bermain</span>
+                    <h2 class="font-display mt-2 text-3xl md:text-[2.5rem] font-extrabold tracking-tight text-slate-950">Tiga level di setiap modul</h2>
+                </div>
+
+                <div class="relative grid md:grid-cols-3 gap-10 md:gap-6">
+                    <svg class="hidden md:block absolute top-9 left-[16%] right-[16%] h-10 text-slate-200" viewBox="0 0 600 40" preserveAspectRatio="none" aria-hidden="true">
+                        <path d="M0 20 C 150 -10, 150 50, 300 20 S 450 -10, 600 20" stroke="currentColor" stroke-width="4" stroke-dasharray="2 14" stroke-linecap="round" fill="none"/>
+                    </svg>
+
+                    <div class="relative text-center md:text-left">
+                        <div class="relative z-10 w-[4.5rem] h-[4.5rem] mx-auto md:mx-0 rounded-2xl bg-sky-500 text-white flex items-center justify-center text-2xl shadow-lg rotate-[-4deg]"><i class="fa-solid fa-flag-checkered"></i></div>
+                        <h3 class="mt-5 font-display text-xl font-bold text-slate-900">Level 1 · Pre-test</h3>
+                        <p class="mt-2 text-slate-600 leading-relaxed">Jawab beberapa pertanyaan singkat untuk mengukur pemahaman awalmu. Tidak ada jawaban yang dinilai buruk di tahap ini.</p>
+                    </div>
+                    <div class="relative text-center md:text-left">
+                        <div class="relative z-10 w-[4.5rem] h-[4.5rem] mx-auto md:mx-0 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-2xl shadow-lg rotate-[3deg]"><i class="fa-solid fa-book-open-reader"></i></div>
+                        <h3 class="mt-5 font-display text-xl font-bold text-slate-900">Level 2 · Modul interaktif</h3>
+                        <p class="mt-2 text-slate-600 leading-relaxed">Buka modul flipbook dan balik halamannya seperti buku sungguhan. Tidak sempat baca? Tinggal tekan tombol dengarkan.</p>
+                    </div>
+                    <div class="relative text-center md:text-left">
+                        <div class="relative z-10 w-[4.5rem] h-[4.5rem] mx-auto md:mx-0 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-2xl shadow-lg rotate-[-3deg]"><i class="fa-solid fa-trophy"></i></div>
+                        <h3 class="mt-5 font-display text-xl font-bold text-slate-900">Level 3 · Post-test</h3>
+                        <p class="mt-2 text-slate-600 leading-relaxed">Buktikan pemahamanmu, kumpulkan XP, dan lihat grafik perkembanganmu langsung di rapor pribadi.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-slate-200 bg-slate-50">
+        <div class="max-w-6xl mx-auto px-6 py-8 text-sm text-slate-500">© 2026 KITA SEBAYA. Dibangun untuk mengedukasi generasi peduli kesehatan.</div>
+    </footer>
+
+    <!-- Modal masuk / daftar -->
+    <div id="modalAuth" class="hidden fixed inset-0 bg-slate-950/50 backdrop-blur-[2px] z-[100] flex items-start sm:items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="judul-auth">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md modal-enter my-8 relative">
+            <button type="button" onclick="tutupModalAuth()" class="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+
+            <div class="p-7 sm:p-8">
+                <h2 id="judul-auth" class="font-display text-2xl font-bold text-slate-950">Masuk ke akunmu</h2>
+                <p id="sub-auth" class="text-sm text-slate-500 mt-1">Lanjutkan modul dan kumpulkan poinmu.</p>
+
+                <div class="grid grid-cols-2 bg-slate-100 p-1 rounded-xl mt-6 mb-6" role="tablist">
+                    <button type="button" onclick="switchTabAuth('login')" id="tab-login" role="tab">Masuk</button>
+                    <button type="button" onclick="switchTabAuth('daftar')" id="tab-daftar" role="tab">Buat akun</button>
+                </div>
+
+                <!-- Form masuk -->
+                <div id="form-login" class="space-y-4">
+                    <label class="block">
+                        <span class="label-form">Email</span>
+                        <input type="email" id="login-email" autocomplete="email" class="input-form" placeholder="nama@email.com">
+                    </label>
+                    <label class="block">
+                        <span class="label-form">Kata sandi</span>
+                        <input type="password" id="login-password" autocomplete="current-password" class="input-form" onkeydown="if(event.key==='Enter')prosesLogin()">
+                    </label>
+                    <button type="button" onclick="prosesLogin()" id="btn-login" class="btn-pop w-full bg-teal-600 hover:bg-teal-500 text-white py-3.5 mt-2" style="--btn-pop-shadow:#0f5c3a">Masuk</button>
+                </div>
+
+                <!-- Form daftar -->
+                <div id="form-daftar" class="hidden space-y-4">
+                    <label class="block">
+                        <span class="label-form">Nama lengkap</span>
+                        <input type="text" id="reg-nama" autocomplete="name" maxlength="80" class="input-form">
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="block">
+                            <span class="label-form">Jenis kelamin</span>
+                            <select id="reg-gender" class="input-form"><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>
+                        </label>
+                        <label class="block">
+                            <span class="label-form">Tanggal lahir</span>
+                            <input type="date" id="reg-tgl-lahir" class="input-form" min="1940-01-01">
+                        </label>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="block">
+                            <span class="label-form">Kategori</span>
+                            <select id="reg-kategori" class="input-form"><option value="Pelajar">Pelajar</option><option value="Mahasiswa">Mahasiswa</option><option value="Umum">Umum</option></select>
+                        </label>
+                        <label class="block">
+                            <span class="label-form">Asal kota</span>
+                            <select id="reg-kota" class="input-form">
+                                <option value="">Pilih kota</option>
+                                <option value="Ternate">Ternate</option>
+                                <option value="Palembang">Palembang</option>
+                                <option value="Semarang">Semarang</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label class="block">
+                        <span class="label-form">Email</span>
+                        <input type="email" id="reg-email" autocomplete="email" class="input-form" placeholder="nama@email.com">
+                    </label>
+                    <label class="block">
+                        <span class="label-form">Kata sandi</span>
+                        <input type="password" id="reg-password" autocomplete="new-password" minlength="8" class="input-form" aria-describedby="bantuan-sandi">
+                        <span id="bantuan-sandi" class="block text-xs text-slate-500 mt-1.5">Minimal 8 karakter.</span>
+                    </label>
+                    <button type="button" onclick="prosesDaftar()" id="btn-daftar" class="btn-pop w-full bg-teal-600 hover:bg-teal-500 text-white py-3.5 mt-2" style="--btn-pop-shadow:#0f5c3a">Buat akun <i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pengantar sistem (slide dari admin) -->
+    <div id="modalIntroSystem" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[200] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden relative modal-enter flex flex-col">
+            <div id="wadah-slides-intro" class="p-8 md:p-12 relative overflow-hidden h-[440px] md:h-[380px]"></div>
+            <div class="px-6 md:px-8 py-4 border-t border-slate-200 flex justify-between items-center">
+                <div id="wadah-dots-intro" class="flex gap-2"></div>
+                <div class="flex gap-2">
+                    <button id="btn-skip-intro" onclick="tutupModalIntro()" class="text-slate-500 hover:text-slate-800 font-semibold text-sm px-4 py-2 transition">Lewati</button>
+                    <button id="btn-next-slide" onclick="nextSlide()" class="btn-pop bg-teal-600 hover:bg-teal-500 text-white px-5 py-2.5" style="--btn-pop-shadow:#0f5c3a">Lanjut</button>
+                    <button id="btn-start-app" onclick="tutupModalIntro()" class="hidden btn-pop bg-teal-600 hover:bg-teal-500 text-white px-5 py-2.5 items-center gap-2" style="--btn-pop-shadow:#0f5c3a">Mulai belajar <i class="fa-solid fa-rocket"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/pages/index.js"></script>
+</body>
+</html>

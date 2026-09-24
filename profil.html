@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapor belajar | KITA SEBAYA</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/theme.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/common.js"></script>
+
+    <link rel="stylesheet" href="assets/css/profil.css">
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="glass-nav sticky top-0 z-40">
+        <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="dashboard.html" class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-950 -ml-3 px-3 py-2 rounded-lg hover:bg-slate-100 transition">
+                <i class="fa-solid fa-arrow-left text-xs"></i> Kembali ke modul
+            </a>
+            <svg class="w-6 h-7 text-rose-600" viewBox="20 10 200 285" fill="none" aria-hidden="true">
+                    <path d="M36 285 L140 120 C175 70 165 20 120 20 C75 20 65 70 100 120 L110 136" stroke="currentColor" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M131 169 L204 285" stroke="currentColor" stroke-width="26" stroke-linecap="round"/>
+                </svg>
+        </nav>
+    </header>
+
+    <main class="flex-1 max-w-6xl w-full mx-auto px-6 py-8 md:py-12">
+        <!-- Identitas + level -->
+        <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-700 via-teal-600 to-sky-600 text-white p-6 md:p-8 shadow-xl">
+            <div class="blob-latar -right-10 -top-16 w-64 h-64 bg-white/15"></div>
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div class="flex items-center gap-5">
+                    <div class="relative w-20 h-20 md:w-24 md:h-24 shrink-0 cincin-progres" id="ring-level-profil" style="--cincin-warna:#FBAF22; --cincin-dasar:rgba(255,255,255,.25)">
+                        <div id="avatar-inisial" class="absolute inset-1.5 rounded-full bg-teal-800 flex items-center justify-center text-2xl md:text-3xl font-bold">?</div>
+                        <span class="absolute -bottom-1 -right-1 bg-amber-400 text-teal-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow border-2 border-teal-600">LV<span id="profil-level">1</span></span>
+                    </div>
+                    <div class="min-w-0">
+                        <h1 id="teks-nama" class="font-display text-2xl md:text-3xl font-bold truncate">Memuat…</h1>
+                        <p id="teks-email" class="text-sm text-teal-100/80 mt-0.5 truncate"></p>
+                        <p class="text-sm text-teal-50 mt-2">
+                            <span id="teks-kategori"></span><span class="text-teal-200/60 mx-2">/</span><span id="teks-gender"></span><span class="text-teal-200/60 mx-2">/</span><span id="teks-usia"></span>
+                        </p>
+                    </div>
+                </div>
+                <button type="button" onclick="bukaModalEdit()" class="btn-pop self-start md:self-center bg-white hover:bg-teal-50 text-teal-800 px-5 py-3" style="--btn-pop-shadow:#0b4029">
+                    <i class="fa-solid fa-pen"></i> Ubah data diri
+                </button>
+            </div>
+        </section>
+
+        <!-- Ringkasan angka -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+            <div class="bg-white rounded-2xl border border-slate-200 p-5">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-3"><i class="fa-solid fa-star"></i></div>
+                <p class="text-xs font-semibold text-slate-500">Total poin</p>
+                <p class="mt-1 font-display text-2xl font-bold text-slate-950"><span id="stat-xp">0</span> <span class="text-sm font-semibold text-slate-400">XP</span></p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-5">
+                <div class="w-9 h-9 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center mb-3"><i class="fa-solid fa-clipboard-check"></i></div>
+                <p class="text-xs font-semibold text-slate-500">Tes selesai</p>
+                <p id="stat-tes" class="mt-1 font-display text-2xl font-bold text-slate-950">0</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-5">
+                <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center mb-3"><i class="fa-solid fa-clock"></i></div>
+                <p class="text-xs font-semibold text-slate-500">Waktu belajar</p>
+                <p id="stat-waktu" class="mt-1 font-display text-2xl font-bold text-slate-950">0m</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-5">
+                <div class="w-9 h-9 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center mb-3"><i class="fa-solid fa-chart-line"></i></div>
+                <p class="text-xs font-semibold text-slate-500">Rata-rata skor</p>
+                <p id="stat-akurasi" class="mt-1 font-display text-2xl font-bold text-slate-950">0</p>
+            </div>
+        </section>
+
+        <!-- Grafik -->
+        <section class="grid lg:grid-cols-2 gap-12 pt-12">
+            <div class="relative">
+                <h2 class="text-lg font-bold text-slate-950">Sebelum dan sesudah membaca</h2>
+                <p class="text-sm text-slate-500 mt-1">Nilai pre-test dibandingkan dengan post-test di setiap modul.</p>
+                <div class="relative h-64 mt-6">
+                    <canvas id="chartPrePost"></canvas>
+                    <div id="pesan-kosong-prepost" class="hidden absolute inset-0 bg-slate-50 flex items-center justify-center text-center">
+                        <p class="text-sm text-slate-500 max-w-xs">Grafik muncul setelah kamu menyelesaikan pre-test dan post-test dari modul yang sama.</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-slate-950">Aktivitas 7 hari terakhir</h2>
+                <p class="text-sm text-slate-500 mt-1">Poin yang didapat dan lama membaca (menit) per hari.</p>
+                <div class="relative h-64 mt-6">
+                    <canvas id="chartAktivitas"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-slate-200 mt-16">
+        <div class="max-w-6xl mx-auto px-6 py-8 text-sm text-slate-500">© 2026 KITA SEBAYA. Dibangun untuk mengedukasi generasi peduli kesehatan.</div>
+    </footer>
+
+    <!-- Modal ubah data diri -->
+    <div id="modalEditProfil" class="hidden fixed inset-0 bg-slate-950/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="judul-edit">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md modal-enter">
+            <div class="px-7 pt-7 flex justify-between items-start">
+                <div>
+                    <h3 id="judul-edit" class="text-xl font-extrabold text-slate-950">Ubah data diri</h3>
+                    <p class="text-sm text-slate-500 mt-1">Email dan kata sandi hanya bisa diubah oleh peneliti.</p>
+                </div>
+                <button type="button" onclick="tutupModalEdit()" class="w-9 h-9 -mr-2 -mt-1 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="p-7 space-y-4">
+                <label class="block">
+                    <span class="label-form">Email</span>
+                    <input type="email" id="input-email" disabled class="input-form bg-slate-50 text-slate-500 cursor-not-allowed">
+                </label>
+                <label class="block">
+                    <span class="label-form">Nama lengkap</span>
+                    <input type="text" id="input-nama" maxlength="80" class="input-form">
+                </label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="block">
+                        <span class="label-form">Kategori</span>
+                        <select id="input-kategori" class="input-form">
+                            <option value="Pelajar">Pelajar</option>
+                            <option value="Mahasiswa">Mahasiswa</option>
+                            <option value="Umum">Umum</option>
+                        </select>
+                    </label>
+                    <label class="block">
+                        <span class="label-form">Jenis kelamin</span>
+                        <select id="input-gender" class="input-form">
+                            <option value="Laki-laki">Laki-laki</option>
+                            <option value="Perempuan">Perempuan</option>
+                        </select>
+                    </label>
+                </div>
+                <label class="block">
+                    <span class="label-form">Tanggal lahir</span>
+                    <input type="date" id="input-tgl-lahir" min="1940-01-01" class="input-form">
+                </label>
+            </div>
+
+            <div class="px-7 pb-7 flex gap-3">
+                <button type="button" onclick="tutupModalEdit()" class="flex-1 bg-white border border-slate-300 hover:border-slate-500 text-slate-800 font-semibold py-3 rounded-xl transition">Batal</button>
+                <button type="button" onclick="simpanProfil(this)" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition">Simpan perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/pages/profil.js"></script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+/* Dasar tampilan bersama semua halaman (tipografi, fokus, gerak). */
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background-color: #f6f7f6;
+    color: #232c29;
+}
+
+h1, h2, h3 {
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+p {
+    text-wrap: pretty;
+}
+
+/* Angka rata agar skor dan poin mudah dibandingkan */
+table,
+[id*="xp"],
+[id*="poin"],
+[id^="stat-"],
+[id^="g-"],
+[id^="m-"] {
+    font-variant-numeric: tabular-nums;
+}
+
+::selection {
+    background: #d5eae5;
+    color: #133733;
+}
+
+:focus-visible {
+    outline: 2px solid #1f665c;
+    outline-offset: 2px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #2e7d71 !important;
+    box-shadow: 0 0 0 3px rgba(46, 125, 113, 0.15) !important;
+    outline: none;
+}
+
+/* Navigasi bening yang tenang */
+.glass-nav {
+    background: rgba(246, 247, 246, 0.86);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 1px solid #e1e4e2;
+}
+
+/* Scrollbar tipis */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #c9cecb transparent;
+}
+
+/* Judul & elemen "bermain" pakai huruf bulat Baloo 2 */
+.font-display,
+.judul-fun {
+    font-family: "Baloo 2", "Plus Jakarta Sans", system-ui, sans-serif;
+    letter-spacing: -0.01em;
+}
+
+/* Tombol dengan efek "pop" 3D ala game — tekan untuk melihat baret turun */
+.btn-pop {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: "Baloo 2", "Plus Jakarta Sans", system-ui, sans-serif;
+    font-weight: 700;
+    border-radius: 16px;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    box-shadow: 0 5px 0 0 var(--btn-pop-shadow, #0f5c3a);
+    transform: translateY(0);
+}
+.btn-pop:hover {
+    transform: translateY(-1px);
+}
+.btn-pop:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 0 var(--btn-pop-shadow, #0f5c3a);
+}
+.btn-pop:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Stiker mengambang: sedikit dimiringkan, terangkat lembut saat disorot */
+.stiker {
+    transform: rotate(var(--stiker-sudut, -4deg));
+    transition: transform 0.2s ease;
+}
+.stiker:hover {
+    transform: rotate(0deg) translateY(-2px);
+}
+
+/* Blob dekoratif lembut di latar */
+.blob-latar {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(50px);
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Bintang berkelap-kelip untuk aksen hero/kartu pencapaian */
+.kelap {
+    animation: kelap 2.6s ease-in-out infinite;
+}
+@keyframes kelap {
+    0%, 100% { opacity: 0.35; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* Mengambang lembut, dipakai satu kali pada elemen hero */
+.mengambang {
+    animation: mengambang 5s ease-in-out infinite;
+}
+@keyframes mengambang {
+    0%, 100% { transform: translateY(0) rotate(var(--float-rot, -2deg)); }
+    50% { transform: translateY(-10px) rotate(var(--float-rot-2, 1deg)); }
+}
+
+/* Cincin progres berbasis conic-gradient; diisi lewat --progres (0-100) */
+.cincin-progres {
+    --progres: 0;
+    background: conic-gradient(var(--cincin-warna, #1f9259) calc(var(--progres) * 1%), var(--cincin-dasar, #e4e0d0) 0);
+    border-radius: 999px;
+    transition: background 0.6s ease;
+}
+
+/* Bilah progres dengan animasi mengisi */
+.progres-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    width: var(--progres, 0%);
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Confetti ringan: dipakai oleh common.js -> tembakConfetti() */
+.confetti-potongan {
+    position: fixed;
+    top: -12px;
+    z-index: 300;
+    border-radius: 3px;
+    pointer-events: none;
+    animation-name: jatuhConfetti;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-fill-mode: forwards;
+}
+@keyframes jatuhConfetti {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(var(--putar, 360deg)); opacity: 0.9; }
+}
+
+/* Denyut lembut untuk menarik perhatian ke elemen baru/penting */
+.denyut-lembut {
+    animation: denyutLembut 2.2s ease-in-out infinite;
+}
+@keyframes denyutLembut {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(31, 146, 89, 0.35); }
+    50% { box-shadow: 0 0 0 8px rgba(31, 146, 89, 0); }
+}
+
+/* Hormati pengguna yang mengurangi animasi */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Formulir */
+.label-form {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #39423e;
+    margin-bottom: 0.375rem;
+}
+
+.input-form {
+    width: 100%;
+    background: #fff;
+    border: 1px solid #c9cecb;
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.9375rem;
+    color: #18201d;
+    min-height: 2.875rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+
+/* Modal */
+.modal-enter {
+    animation: masuk 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes masuk {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+}
+

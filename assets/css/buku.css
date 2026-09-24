@@ -1,0 +1,81 @@
+/* Gaya khusus halaman buku.html */
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #0f172a;
+    font-family: sans-serif;
+}
+.modal-enter {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+.quiz-enter {
+    animation: slideUp 0.4s ease-out forwards;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+._df_book {
+    height: 100vh !important;
+    width: 100vw !important;
+    margin: 0 !important;
+}
+input[type="radio"]:checked + span {
+    color: #e11d48;
+    font-weight: bold;
+}
+.radio-card:has(input[type="radio"]:checked) {
+    border-color: #e11d48;
+    background-color: #fff1f2;
+}
+
+/* Panel baca otomatis */
+#tts-equalizer.flex {
+    display: flex;
+}
+#tts-equalizer span {
+    width: 3px;
+    border-radius: 2px;
+    background: #db3f31;
+    animation: tts-eq 0.9s ease-in-out infinite;
+    transform-origin: bottom;
+}
+#tts-equalizer span:nth-child(1) {
+    height: 40%;
+    animation-delay: 0s;
+}
+#tts-equalizer span:nth-child(2) {
+    height: 100%;
+    animation-delay: 0.15s;
+}
+#tts-equalizer span:nth-child(3) {
+    height: 65%;
+    animation-delay: 0.3s;
+}
+@keyframes tts-eq {
+    0%, 100% { transform: scaleY(0.35); }
+    50% { transform: scaleY(1); }
+}
+#tts-stop.flex {
+    display: flex;
+}
